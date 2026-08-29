@@ -19,6 +19,7 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI(title="InterOne API")
 
+# Fix CORS Middleware syntax
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,15 +28,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Absolute path resolution for Jinja2 templates
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
+
 # Pydantic Schemas
 class ChatRequest(BaseModel):
     message: str
+
 
 class ZeroWasteRequest(BaseModel):
     crop_name: str
@@ -43,9 +47,11 @@ class ZeroWasteRequest(BaseModel):
     location: str
     condition: str
 
+
 class MandiQueryRequest(BaseModel):
     crop_name: str
     location: str
+
 
 class ListingRequest(BaseModel):
     farmer_name: str
@@ -55,15 +61,22 @@ class ListingRequest(BaseModel):
     location: str
     contact: str
 
+
+# Root Endpoint
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html"
+    )
+
 
 # DATABASE MARKETPLACE ENDPOINTS
 @app.get("/api/listings")
 def get_listings(db: Session = Depends(database.get_db)):
     listings = db.query(models.DBListing).order_by(models.DBListing.id.desc()).all()
     return listings
+
 
 @app.post("/api/listings")
 def create_listing(req: ListingRequest, db: Session = Depends(database.get_db)):
@@ -73,12 +86,13 @@ def create_listing(req: ListingRequest, db: Session = Depends(database.get_db)):
         quantity_kg=req.quantity_kg,
         price_per_kg=req.price_per_kg,
         location=req.location,
-        contact=req.contact
+        contact=req.contact,
     )
     db.add(new_listing)
     db.commit()
     db.refresh(new_listing)
     return {"status": "success", "listing": new_listing}
+
 
 # AI ENDPOINTS
 @app.post("/api/ai/chat")
@@ -89,12 +103,13 @@ def ai_chat(req: ChatRequest):
             "Help farmers sell crops directly, suggest pricing, and suggest zero-waste channels."
         )
         response = client.models.generate_content(
-            model = "gemini-3.6-flash",
-            contents=f"{system_prompt}\n\nUser Question: {req.message}"
+            model="gemini-2.5-flash",
+            contents=f"{system_prompt}\n\nUser Question: {req.message}",
         )
         return {"reply": response.text}
     except Exception as e:
         return {"reply": f"AI Error: {str(e)}"}
+
 
 @app.post("/api/ai/zero-waste")
 def zero_waste_analysis(req: ZeroWasteRequest):
@@ -109,12 +124,13 @@ def zero_waste_analysis(req: ZeroWasteRequest):
             "Include estimated recovery pricing in INR/kg for each option."
         )
         response = client.models.generate_content(
-            model = "gemini-3.6-flash",
-            contents=prompt
+            model="gemini-2.5-flash",
+            contents=prompt,
         )
         return {"strategy": response.text}
     except Exception as e:
         return {"strategy": f"Analysis Error: {str(e)}"}
+
 
 @app.post("/api/ai/mandi-price")
 def get_mandi_price_intelligence(req: MandiQueryRequest):
@@ -135,8 +151,8 @@ def get_mandi_price_intelligence(req: MandiQueryRequest):
             f"4. **Best Selling Advice**: Clear actionable recommendation for the farmer."
         )
         response = client.models.generate_content(
-            model = "gemini-3.6-flash",
-            contents=prompt
+            model="gemini-2.5-flash",
+            contents=prompt,
         )
         return {"report": response.text}
     except Exception as e:
