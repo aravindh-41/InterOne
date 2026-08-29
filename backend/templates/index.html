@@ -20,17 +20,15 @@
             const [listings, setListings] = useState([]);
             const [loadingListings, setLoadingListings] = useState(false);
 
-            // Listing Form State
             const [newListing, setNewListing] = useState({
                 farmer_name: '', crop_name: '', quantity_kg: '', price_per_kg: '', location: '', contact: ''
             });
 
-            // AI Features State
             const [chatMsg, setChatMsg] = useState('');
             const [chatReply, setChatReply] = useState('');
             const [chatLoading, setChatLoading] = useState(false);
 
-            const [zeroForm, setZeroForm] = useState({ crop_name: '', quantity_kg: '', location: '', condition: 'Fresh' });
+            const [zeroForm, setZeroForm] = useState({ crop_name: '', quantity_kg: '', location: '', condition: 'Fresh Surplus' });
             const [zeroReply, setZeroReply] = useState('');
             const [zeroLoading, setZeroLoading] = useState(false);
 
@@ -47,7 +45,7 @@
                 try {
                     const res = await fetch('/api/listings');
                     const data = await res.json();
-                    setListings(data);
+                    setListings(Array.isArray(data) ? data : []);
                 } catch (err) {
                     console.error("Error fetching listings:", err);
                 } finally {
@@ -133,19 +131,18 @@
             };
 
             return (
-                <div class="max-w-6xl mx-auto px-4 py-8">
-                    <!-- Navigation Bar -->
-                    <header class="bg-emerald-700 text-white p-6 rounded-2xl shadow-lg mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="max-w-6xl mx-auto px-4 py-8">
+                    <header className="bg-emerald-700 text-white p-6 rounded-2xl shadow-lg mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
-                            <h1 class="text-3xl font-bold tracking-tight">🌾 InterOne</h1>
-                            <p class="text-emerald-100 text-sm">Direct Agricultural Marketplace & AI Advisory</p>
+                            <h1 className="text-3xl font-bold tracking-tight">🌾 InterOne</h1>
+                            <p className="text-emerald-100 text-sm">Direct Agricultural Marketplace & AI Advisory</p>
                         </div>
-                        <nav class="flex gap-2 bg-emerald-800 p-1.5 rounded-xl text-sm font-medium">
+                        <nav className="flex gap-2 bg-emerald-800 p-1.5 rounded-xl text-sm font-medium">
                             {['marketplace', 'chat', 'zero-waste', 'mandi-price'].map(tab => (
                                 <button
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
-                                    class={`px-4 py-2 rounded-lg capitalize transition ${
+                                    className={`px-4 py-2 rounded-lg capitalize transition ${
                                         activeTab === tab ? 'bg-white text-emerald-800 shadow' : 'text-emerald-100 hover:text-white'
                                     }`}
                                 >
@@ -155,47 +152,46 @@
                         </nav>
                     </header>
 
-                    <!-- TAB 1: MARKETPLACE -->
                     {activeTab === 'marketplace' && (
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                <h2 class="text-xl font-bold mb-4 text-emerald-800">Post New Crop Listing</h2>
-                                <form onSubmit={handleCreateListing} class="space-y-4">
-                                    <input type="text" placeholder="Farmer Name" required class="w-full p-2.5 border rounded-lg" value={newListing.farmer_name} onChange={e => setNewListing({...newListing, farmer_name: e.target.value})} />
-                                    <input type="text" placeholder="Crop Name (e.g., Rice, Tomatoes)" required class="w-full p-2.5 border rounded-lg" value={newListing.crop_name} onChange={e => setNewListing({...newListing, crop_name: e.target.value})} />
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <input type="number" step="any" placeholder="Quantity (kg)" required class="w-full p-2.5 border rounded-lg" value={newListing.quantity_kg} onChange={e => setNewListing({...newListing, quantity_kg: e.target.value})} />
-                                        <input type="number" step="any" placeholder="Price (₹/kg)" required class="w-full p-2.5 border rounded-lg" value={newListing.price_per_kg} onChange={e => setNewListing({...newListing, price_per_kg: e.target.value})} />
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <h2 className="text-xl font-bold mb-4 text-emerald-800">Post New Crop Listing</h2>
+                                <form onSubmit={handleCreateListing} className="space-y-4">
+                                    <input type="text" placeholder="Farmer Name" required className="w-full p-2.5 border rounded-lg" value={newListing.farmer_name} onChange={e => setNewListing({...newListing, farmer_name: e.target.value})} />
+                                    <input type="text" placeholder="Crop Name (e.g., Rice, Tomatoes)" required className="w-full p-2.5 border rounded-lg" value={newListing.crop_name} onChange={e => setNewListing({...newListing, crop_name: e.target.value})} />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <input type="number" step="any" placeholder="Quantity (kg)" required className="w-full p-2.5 border rounded-lg" value={newListing.quantity_kg} onChange={e => setNewListing({...newListing, quantity_kg: e.target.value})} />
+                                        <input type="number" step="any" placeholder="Price (₹/kg)" required className="w-full p-2.5 border rounded-lg" value={newListing.price_per_kg} onChange={e => setNewListing({...newListing, price_per_kg: e.target.value})} />
                                     </div>
-                                    <input type="text" placeholder="Location (District/State)" required class="w-full p-2.5 border rounded-lg" value={newListing.location} onChange={e => setNewListing({...newListing, location: e.target.value})} />
-                                    <input type="text" placeholder="Contact Phone / WhatsApp" required class="w-full p-2.5 border rounded-lg" value={newListing.contact} onChange={e => setNewListing({...newListing, contact: e.target.value})} />
-                                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg shadow transition">
+                                    <input type="text" placeholder="Location (District/State)" required className="w-full p-2.5 border rounded-lg" value={newListing.location} onChange={e => setNewListing({...newListing, location: e.target.value})} />
+                                    <input type="text" placeholder="Contact Phone / WhatsApp" required className="w-full p-2.5 border rounded-lg" value={newListing.contact} onChange={e => setNewListing({...newListing, contact: e.target.value})} />
+                                    <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg shadow transition">
                                         Submit Listing
                                     </button>
                                 </form>
                             </div>
 
-                            <div class="lg:col-span-2">
-                                <div class="flex justify-between items-center mb-4">
-                                    <h2 class="text-xl font-bold text-slate-800">Available Produce</h2>
-                                    <button onClick={fetchListings} class="text-sm text-emerald-600 hover:underline">Refresh List</button>
+                            <div className="lg:col-span-2">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-xl font-bold text-slate-800">Available Produce</h2>
+                                    <button onClick={fetchListings} className="text-sm text-emerald-600 hover:underline">Refresh List</button>
                                 </div>
                                 {loadingListings ? (
-                                    <p class="text-slate-500">Loading marketplace items...</p>
+                                    <p className="text-slate-500">Loading marketplace items...</p>
                                 ) : listings.length === 0 ? (
-                                    <div class="bg-white p-8 rounded-2xl text-center text-slate-500 border">No listings available yet. Be the first to post!</div>
+                                    <div className="bg-white p-8 rounded-2xl text-center text-slate-500 border">No listings available yet. Be the first to post!</div>
                                 ) : (
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {listings.map(item => (
-                                            <div key={item.id} class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow transition">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <h3 class="text-lg font-bold text-slate-900">{item.crop_name}</h3>
-                                                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">₹{item.price_per_kg}/kg</span>
+                                            <div key={item.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow transition">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <h3 className="text-lg font-bold text-slate-900">{item.crop_name}</h3>
+                                                    <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">₹{item.price_per_kg}/kg</span>
                                                 </div>
-                                                <p class="text-slate-600 text-sm mb-1">📦 Quantity: <span class="font-semibold">{item.quantity_kg} kg</span></p>
-                                                <p class="text-slate-600 text-sm mb-1">📍 Location: {item.location}</p>
-                                                <p class="text-slate-600 text-sm mb-3">🧑‍🌾 Farmer: {item.farmer_name}</p>
-                                                <a href={`tel:${item.contact}`} class="inline-block text-center w-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-medium py-2 rounded-lg border">
+                                                <p className="text-slate-600 text-sm mb-1">📦 Quantity: <span className="font-semibold">{item.quantity_kg} kg</span></p>
+                                                <p className="text-slate-600 text-sm mb-1">📍 Location: {item.location}</p>
+                                                <p className="text-slate-600 text-sm mb-3">🧑‍🌾 Farmer: {item.farmer_name}</p>
+                                                <a href={`tel:${item.contact}`} className="inline-block text-center w-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-medium py-2 rounded-lg border">
                                                     📞 Contact Seller
                                                 </a>
                                             </div>
@@ -206,60 +202,57 @@
                         </div>
                     )}
 
-                    <!-- TAB 2: AI CHAT -->
                     {activeTab === 'chat' && (
-                        <div class="max-w-3xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
-                            <h2 class="text-xl font-bold mb-4 text-emerald-800">InterOne AI Assistant</h2>
-                            <textarea rows="4" placeholder="Ask anything about crop selection, selling advice, or market trends..." class="w-full p-3 border rounded-xl mb-4" value={chatMsg} onChange={e => setChatMsg(e.target.value)}></textarea>
-                            <button onClick={handleAiChat} disabled={chatLoading} class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow">
+                        <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
+                            <h2 className="text-xl font-bold mb-4 text-emerald-800">InterOne AI Assistant</h2>
+                            <textarea rows="4" placeholder="Ask anything about crop selection, selling advice, or market trends..." className="w-full p-3 border rounded-xl mb-4" value={chatMsg} onChange={e => setChatMsg(e.target.value)}></textarea>
+                            <button onClick={handleAiChat} disabled={chatLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow">
                                 {chatLoading ? 'Thinking...' : 'Ask AI'}
                             </button>
                             {chatReply && (
-                                <div class="mt-6 p-4 bg-slate-50 border rounded-xl whitespace-pre-line text-slate-700">
+                                <div className="mt-6 p-4 bg-slate-50 border rounded-xl whitespace-pre-line text-slate-700">
                                     {chatReply}
                                 </div>
                             )}
                         </div>
                     )}
 
-                    <!-- TAB 3: ZERO WASTE -->
                     {activeTab === 'zero-waste' && (
-                        <div class="max-w-3xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
-                            <h2 class="text-xl font-bold mb-4 text-emerald-800">Zero-Waste Advisory</h2>
-                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                <input type="text" placeholder="Crop Name" class="p-2.5 border rounded-lg" value={zeroForm.crop_name} onChange={e => setZeroForm({...zeroForm, crop_name: e.target.value})} />
-                                <input type="number" placeholder="Quantity (kg)" class="p-2.5 border rounded-lg" value={zeroForm.quantity_kg} onChange={e => setZeroForm({...zeroForm, quantity_kg: e.target.value})} />
-                                <input type="text" placeholder="Location" class="p-2.5 border rounded-lg" value={zeroForm.location} onChange={e => setZeroForm({...zeroForm, location: e.target.value})} />
-                                <select class="p-2.5 border rounded-lg" value={zeroForm.condition} onChange={e => setZeroForm({...zeroForm, condition: e.target.value})}>
+                        <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
+                            <h2 className="text-xl font-bold mb-4 text-emerald-800">Zero-Waste Advisory</h2>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <input type="text" placeholder="Crop Name" className="p-2.5 border rounded-lg" value={zeroForm.crop_name} onChange={e => setZeroForm({...zeroForm, crop_name: e.target.value})} />
+                                <input type="number" placeholder="Quantity (kg)" className="p-2.5 border rounded-lg" value={zeroForm.quantity_kg} onChange={e => setZeroForm({...zeroForm, quantity_kg: e.target.value})} />
+                                <input type="text" placeholder="Location" className="p-2.5 border rounded-lg" value={zeroForm.location} onChange={e => setZeroForm({...zeroForm, location: e.target.value})} />
+                                <select className="p-2.5 border rounded-lg" value={zeroForm.condition} onChange={e => setZeroForm({...zeroForm, condition: e.target.value})}>
                                     <option value="Fresh Surplus">Fresh Surplus</option>
                                     <option value="Slightly Damaged">Slightly Damaged</option>
                                     <option value="Overripe">Overripe</option>
                                 </select>
                             </div>
-                            <button onClick={handleZeroWaste} disabled={zeroLoading} class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow">
+                            <button onClick={handleZeroWaste} disabled={zeroLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow">
                                 {zeroLoading ? 'Analyzing...' : 'Generate Strategy'}
                             </button>
                             {zeroReply && (
-                                <div class="mt-6 p-4 bg-slate-50 border rounded-xl whitespace-pre-line text-slate-700">
+                                <div className="mt-6 p-4 bg-slate-50 border rounded-xl whitespace-pre-line text-slate-700">
                                     {zeroReply}
                                 </div>
                             )}
                         </div>
                     )}
 
-                    <!-- TAB 4: MANDI INTEL -->
                     {activeTab === 'mandi-price' && (
-                        <div class="max-w-3xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
-                            <h2 class="text-xl font-bold mb-4 text-emerald-800">Mandi Price Intelligence</h2>
-                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                <input type="text" placeholder="Crop Name (e.g. Onion)" class="p-2.5 border rounded-lg" value={mandiForm.crop_name} onChange={e => setMandiForm({...mandiForm, crop_name: e.target.value})} />
-                                <input type="text" placeholder="Mandi / District (e.g. Madurai)" class="p-2.5 border rounded-lg" value={mandiForm.location} onChange={e => setMandiForm({...mandiForm, location: e.target.value})} />
+                        <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
+                            <h2 className="text-xl font-bold mb-4 text-emerald-800">Mandi Price Intelligence</h2>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <input type="text" placeholder="Crop Name (e.g. Onion)" className="p-2.5 border rounded-lg" value={mandiForm.crop_name} onChange={e => setMandiForm({...mandiForm, crop_name: e.target.value})} />
+                                <input type="text" placeholder="Mandi / District (e.g. Madurai)" className="p-2.5 border rounded-lg" value={mandiForm.location} onChange={e => setMandiForm({...mandiForm, location: e.target.value})} />
                             </div>
-                            <button onClick={handleMandiIntel} disabled={mandiLoading} class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow">
+                            <button onClick={handleMandiIntel} disabled={mandiLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow">
                                 {mandiLoading ? 'Fetching Prices...' : 'Get Intelligence Report'}
                             </button>
                             {mandiReply && (
-                                <div class="mt-6 p-4 bg-slate-50 border rounded-xl whitespace-pre-line text-slate-700">
+                                <div className="mt-6 p-4 bg-slate-50 border rounded-xl whitespace-pre-line text-slate-700">
                                     {mandiReply}
                                 </div>
                             )}
