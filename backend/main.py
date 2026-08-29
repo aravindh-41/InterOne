@@ -1,7 +1,6 @@
 from pathlib import Path
 from fastapi import FastAPI, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -28,9 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Absolute path resolution for Jinja2 templates
+# Absolute path resolution for HTML file
 BASE_DIR = Path(__file__).resolve().parent
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+INDEX_HTML_PATH = BASE_DIR / "templates" / "index.html"
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
@@ -62,13 +61,10 @@ class ListingRequest(BaseModel):
     contact: str
 
 
-# Root Endpoint
-@app.get("/", response_class=HTMLResponse)
-def read_root(request: Request):
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html"
-    )
+# Root Endpoint (Serves raw index.html cleanly without Jinja2 template errors)
+@app.get("/", response_class=FileResponse)
+def read_root():
+    return FileResponse(INDEX_HTML_PATH)
 
 
 # DATABASE MARKETPLACE ENDPOINTS
@@ -153,7 +149,6 @@ def get_mandi_price_intelligence(req: MandiQueryRequest):
         response = client.models.generate_content(
             model="gemini-3.6-flash",
             contents=prompt,
-    
         )
         return {"report": response.text}
     except Exception as e:
