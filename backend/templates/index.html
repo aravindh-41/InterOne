@@ -4,26 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InterOne - Agricultural Marketplace & AI Advisory</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Marked.js for AI Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- React & Babel CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <style>
-        /* Table styling for AI responses */
-        .prose table { width: 100%; border-collapse: collapse; margin-top: 1rem; margin-bottom: 1rem; }
-        .prose th, .prose td { border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; text-align: left; }
-        .prose th { background-color: #f8fafc; font-weight: 600; }
+        /* Table & Prose styling for AI responses */
+        .prose table { width: 100%; border-collapse: collapse; margin-top: 1rem; margin-bottom: 1rem; border-radius: 0.5rem; overflow: hidden; }
+        .prose th, .prose td { border: 1px solid #cbd5e1; padding: 0.6rem 0.8rem; text-align: left; }
+        .prose th { background-color: #ecfdf5; color: #065f46; font-weight: 700; }
         .prose ul { list-style-type: disc; padding-left: 1.25rem; }
         .prose ol { list-style-type: decimal; padding-left: 1.25rem; }
-        .prose h3 { font-size: 1.25rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .prose h3 { font-size: 1.2rem; font-weight: 700; margin-top: 1rem; margin-bottom: 0.5rem; color: #047857; }
+        .prose p { margin-bottom: 0.5rem; }
+
+        /* Driving Tractor Animation */
+        @keyframes tractorBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-4deg) rotate(-1deg); }
+        }
+        .animate-tractor {
+            display: inline-block;
+            animation: tractorBounce 0.6s infinite ease-in-out;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen">
+<body class="bg-emerald-50/40 text-slate-800 min-h-screen font-sans">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
+
+        // Agricultural Tractor Loading Component
+        const FarmLoader = ({ text = "Working..." }) => (
+            <div className="flex flex-col items-center justify-center py-6 space-y-2 text-emerald-800 font-semibold">
+                <div className="text-4xl animate-tractor">🚜</div>
+                <div className="flex items-center space-y-1">
+                    <span className="text-sm bg-emerald-100 text-emerald-900 px-3 py-1 rounded-full border border-emerald-300 shadow-sm animate-pulse">
+                        🌾 {text}
+                    </span>
+                </div>
+            </div>
+        );
 
         function App() {
             const [activeTab, setActiveTab] = useState('marketplace');
@@ -78,7 +105,7 @@
                     if (res.ok) {
                         setNewListing({ farmer_name: '', crop_name: '', quantity_kg: '', price_per_kg: '', location: '', contact: '' });
                         fetchListings();
-                        alert('Listing created successfully!');
+                        alert('🌱 Crop listing added successfully!');
                     }
                 } catch (err) {
                     alert('Failed to post listing');
@@ -142,67 +169,88 @@
 
             return (
                 <div className="max-w-6xl mx-auto px-4 py-8">
-                    <header className="bg-emerald-700 text-white p-6 rounded-2xl shadow-lg mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-tight">🌾 InterOne</h1>
-                            <p className="text-emerald-100 text-sm">Direct Agricultural Marketplace & AI Advisory</p>
+                    {/* Header Banner */}
+                    <header className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-800 text-white p-6 rounded-3xl shadow-xl mb-8 flex flex-col md:flex-row justify-between items-center gap-4 border-b-4 border-amber-500">
+                        <div className="flex items-center space-x-3">
+                            <span className="text-4xl">🌾</span>
+                            <div>
+                                <h1 className="text-3xl font-extrabold tracking-tight flex items-center gap-2">
+                                    InterOne <span className="text-xs bg-amber-400 text-amber-950 font-bold px-2 py-0.5 rounded-full uppercase">Agri Tech</span>
+                                </h1>
+                                <p className="text-emerald-100 text-sm">Direct Farm Marketplace & AI Advisory</p>
+                            </div>
                         </div>
-                        <nav className="flex gap-2 bg-emerald-800 p-1.5 rounded-xl text-sm font-medium">
-                            {['marketplace', 'chat', 'zero-waste', 'mandi-price'].map(tab => (
+                        <nav className="flex flex-wrap gap-2 bg-emerald-950/40 p-1.5 rounded-2xl border border-emerald-600/30 text-sm font-medium">
+                            {[
+                                { id: 'marketplace', label: '🛒 Marketplace' },
+                                { id: 'chat', label: '🧑‍🌾 Farmer AI' },
+                                { id: 'zero-waste', label: '♻️ Zero Waste' },
+                                { id: 'mandi-price', label: '📊 Mandi Rates' }
+                            ].map(tab => (
                                 <button
-                                    key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={`px-4 py-2 rounded-lg capitalize transition ${
-                                        activeTab === tab ? 'bg-white text-emerald-800 shadow' : 'text-emerald-100 hover:text-white'
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`px-4 py-2 rounded-xl transition-all duration-200 ${
+                                        activeTab === tab.id 
+                                            ? 'bg-amber-400 text-emerald-950 font-bold shadow-md transform scale-105' 
+                                            : 'text-emerald-100 hover:text-white hover:bg-emerald-800/60'
                                     }`}
                                 >
-                                    {tab.replace('-', ' ')}
+                                    {tab.label}
                                 </button>
                             ))}
                         </nav>
                     </header>
 
+                    {/* MARKETPLACE TAB */}
                     {activeTab === 'marketplace' && (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                <h2 className="text-xl font-bold mb-4 text-emerald-800">Post New Crop Listing</h2>
+                            <div className="bg-white p-6 rounded-3xl shadow-md border border-emerald-100">
+                                <h2 className="text-xl font-bold mb-4 text-emerald-900 flex items-center gap-2">
+                                    📢 Sell Produce
+                                </h2>
                                 <form onSubmit={handleCreateListing} className="space-y-4">
-                                    <input type="text" placeholder="Farmer Name" required className="w-full p-2.5 border rounded-lg" value={newListing.farmer_name} onChange={e => setNewListing({...newListing, farmer_name: e.target.value})} />
-                                    <input type="text" placeholder="Crop Name (e.g., Rice, Tomatoes)" required className="w-full p-2.5 border rounded-lg" value={newListing.crop_name} onChange={e => setNewListing({...newListing, crop_name: e.target.value})} />
+                                    <input type="text" placeholder="👨‍🌾 Farmer / Producer Name" required className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={newListing.farmer_name} onChange={e => setNewListing({...newListing, farmer_name: e.target.value})} />
+                                    <input type="text" placeholder="🌽 Crop Name (e.g. Rice, Tomatoes)" required className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={newListing.crop_name} onChange={e => setNewListing({...newListing, crop_name: e.target.value})} />
                                     <div className="grid grid-cols-2 gap-2">
-                                        <input type="number" step="any" placeholder="Quantity (kg)" required className="w-full p-2.5 border rounded-lg" value={newListing.quantity_kg} onChange={e => setNewListing({...newListing, quantity_kg: e.target.value})} />
-                                        <input type="number" step="any" placeholder="Price (₹/kg)" required className="w-full p-2.5 border rounded-lg" value={newListing.price_per_kg} onChange={e => setNewListing({...newListing, price_per_kg: e.target.value})} />
+                                        <input type="number" step="any" placeholder="⚖️ Quantity (kg)" required className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={newListing.quantity_kg} onChange={e => setNewListing({...newListing, quantity_kg: e.target.value})} />
+                                        <input type="number" step="any" placeholder="🏷️ Price (₹/kg)" required className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={newListing.price_per_kg} onChange={e => setNewListing({...newListing, price_per_kg: e.target.value})} />
                                     </div>
-                                    <input type="text" placeholder="Location (District/State)" required className="w-full p-2.5 border rounded-lg" value={newListing.location} onChange={e => setNewListing({...newListing, location: e.target.value})} />
-                                    <input type="text" placeholder="Contact Phone / WhatsApp" required className="w-full p-2.5 border rounded-lg" value={newListing.contact} onChange={e => setNewListing({...newListing, contact: e.target.value})} />
-                                    <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg shadow transition">
-                                        Submit Listing
+                                    <input type="text" placeholder="📍 Location (District, State)" required className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={newListing.location} onChange={e => setNewListing({...newListing, location: e.target.value})} />
+                                    <input type="text" placeholder="📞 Contact Phone / WhatsApp" required className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={newListing.contact} onChange={e => setNewListing({...newListing, contact: e.target.value})} />
+                                    <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition">
+                                        🌱 Publish Harvest
                                     </button>
                                 </form>
                             </div>
 
                             <div className="lg:col-span-2">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-bold text-slate-800">Available Produce</h2>
-                                    <button onClick={fetchListings} className="text-sm text-emerald-600 hover:underline">Refresh List</button>
+                                    <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">🚜 Available Direct Harvests</h2>
+                                    <button onClick={fetchListings} className="text-sm font-semibold text-emerald-700 hover:text-emerald-900 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition">🔄 Refresh</button>
                                 </div>
                                 {loadingListings ? (
-                                    <p className="text-slate-500">Loading marketplace items...</p>
+                                    <FarmLoader text="Loading marketplace items..." />
                                 ) : listings.length === 0 ? (
-                                    <div className="bg-white p-8 rounded-2xl text-center text-slate-500 border">No listings available yet. Be the first to post!</div>
+                                    <div className="bg-white p-12 rounded-3xl text-center text-slate-500 border border-emerald-100 shadow-sm">
+                                        <span className="text-5xl block mb-2">🧑‍🌾</span>
+                                        No listings active right now. Post your harvest first!
+                                    </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {listings.map(item => (
-                                            <div key={item.id} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow transition">
+                                            <div key={item.id} className="bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm hover:shadow-md transition transform hover:-translate-y-1">
                                                 <div className="flex justify-between items-start mb-2">
-                                                    <h3 className="text-lg font-bold text-slate-900">{item.crop_name}</h3>
-                                                    <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full">₹{item.price_per_kg}/kg</span>
+                                                    <h3 className="text-lg font-bold text-slate-900 flex items-center gap-1">🌾 {item.crop_name}</h3>
+                                                    <span className="bg-emerald-100 text-emerald-900 font-extrabold text-sm px-3 py-1 rounded-full border border-emerald-200">₹{item.price_per_kg} / kg</span>
                                                 </div>
-                                                <p className="text-slate-600 text-sm mb-1">📦 Quantity: <span className="font-semibold">{item.quantity_kg} kg</span></p>
-                                                <p className="text-slate-600 text-sm mb-1">📍 Location: {item.location}</p>
-                                                <p className="text-slate-600 text-sm mb-3">🧑‍🌾 Farmer: {item.farmer_name}</p>
-                                                <a href={`tel:${item.contact}`} className="inline-block text-center w-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-medium py-2 rounded-lg border">
-                                                    📞 Contact Seller
+                                                <div className="text-slate-600 text-sm space-y-1 mb-4">
+                                                    <p>📦 <strong>Stock:</strong> {item.quantity_kg} kg</p>
+                                                    <p>📍 <strong>Location:</strong> {item.location}</p>
+                                                    <p>🧑‍🌾 <strong>Farmer:</strong> {item.farmer_name}</p>
+                                                </div>
+                                                <a href={`tel:${item.contact}`} className="inline-flex items-center justify-center gap-2 w-full bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold py-2.5 rounded-xl transition shadow-sm">
+                                                    📞 Call Farmer ({item.contact})
                                                 </a>
                                             </div>
                                         ))}
@@ -212,62 +260,104 @@
                         </div>
                     )}
 
+                    {/* FARMER AI CHAT TAB */}
                     {activeTab === 'chat' && (
-                        <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
-                            <h2 className="text-xl font-bold mb-4 text-emerald-800">InterOne AI Assistant</h2>
-                            <textarea rows="4" placeholder="Ask anything about crop selection, selling advice, or market trends..." className="w-full p-3 border rounded-xl mb-4" value={chatMsg} onChange={e => setChatMsg(e.target.value)}></textarea>
-                            <button onClick={handleAiChat} disabled={chatLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow">
-                                {chatLoading ? 'Thinking...' : 'Ask AI'}
+                        <div className="max-w-3xl mx-auto bg-white p-6 rounded-3xl border border-emerald-100 shadow-md">
+                            <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-slate-100">
+                                <div className="w-12 h-12 bg-emerald-100 text-3xl flex items-center justify-center rounded-2xl border border-emerald-200 shadow-sm">🧑‍🌾</div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-emerald-900">Farmer Advisory AI</h2>
+                                    <p className="text-xs text-slate-500">Ask about weather, pest protection, or crop prices</p>
+                                </div>
+                            </div>
+                            
+                            <textarea rows="4" placeholder="Ask your question here (e.g., Best crops for red soil, or how to treat tomato pests)..." className="w-full p-4 border border-slate-200 rounded-2xl mb-4 focus:ring-2 focus:ring-emerald-500 outline-none" value={chatMsg} onChange={e => setChatMsg(e.target.value)}></textarea>
+                            
+                            <button onClick={handleAiChat} disabled={chatLoading} className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-md transition">
+                                Send Question
                             </button>
-                            {chatReply && (
-                                <div
-                                    className="mt-6 p-6 bg-slate-50 border rounded-xl text-slate-700 prose max-w-none space-y-2"
-                                    dangerouslySetInnerHTML={{ __html: marked.parse(chatReply) }}
-                                />
+
+                            {chatLoading && <FarmLoader text="Tractor driving to get your AI response..." />}
+
+                            {chatReply && !chatLoading && (
+                                <div className="mt-6 p-6 bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl text-slate-800 shadow-inner">
+                                    <div className="flex items-center gap-2 text-emerald-900 font-bold mb-3 pb-2 border-b border-emerald-200">
+                                        <span>🧑‍🌾 Farmer AI Says:</span>
+                                    </div>
+                                    <div className="prose max-w-none text-slate-800" dangerouslySetInnerHTML={{ __html: marked.parse(chatReply) }} />
+                                </div>
                             )}
                         </div>
                     )}
 
+                    {/* ZERO WASTE TAB */}
                     {activeTab === 'zero-waste' && (
-                        <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
-                            <h2 className="text-xl font-bold mb-4 text-emerald-800">Zero-Waste Advisory</h2>
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <input type="text" placeholder="Crop Name" className="p-2.5 border rounded-lg" value={zeroForm.crop_name} onChange={e => setZeroForm({...zeroForm, crop_name: e.target.value})} />
-                                <input type="number" placeholder="Quantity (kg)" className="p-2.5 border rounded-lg" value={zeroForm.quantity_kg} onChange={e => setZeroForm({...zeroForm, quantity_kg: e.target.value})} />
-                                <input type="text" placeholder="Location" className="p-2.5 border rounded-lg" value={zeroForm.location} onChange={e => setZeroForm({...zeroForm, location: e.target.value})} />
-                                <select className="p-2.5 border rounded-lg" value={zeroForm.condition} onChange={e => setZeroForm({...zeroForm, condition: e.target.value})}>
+                        <div className="max-w-3xl mx-auto bg-white p-6 rounded-3xl border border-emerald-100 shadow-md">
+                            <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-slate-100">
+                                <div className="w-12 h-12 bg-emerald-100 text-3xl flex items-center justify-center rounded-2xl border border-emerald-200 shadow-sm">♻️</div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-emerald-900">Zero-Waste Advisory Engine</h2>
+                                    <p className="text-xs text-slate-500">Find alternative buyers & processing options for surplus or damaged yields</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <input type="text" placeholder="🌾 Crop Name" className="p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={zeroForm.crop_name} onChange={e => setZeroForm({...zeroForm, crop_name: e.target.value})} />
+                                <input type="number" placeholder="⚖️ Quantity (kg)" className="p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={zeroForm.quantity_kg} onChange={e => setZeroForm({...zeroForm, quantity_kg: e.target.value})} />
+                                <input type="text" placeholder="📍 Location" className="p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={zeroForm.location} onChange={e => setZeroForm({...zeroForm, location: e.target.value})} />
+                                <select className="p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none bg-white" value={zeroForm.condition} onChange={e => setZeroForm({...zeroForm, condition: e.target.value})}>
                                     <option value="Fresh Surplus">Fresh Surplus</option>
                                     <option value="Slightly Damaged">Slightly Damaged</option>
                                     <option value="Overripe">Overripe</option>
                                 </select>
                             </div>
-                            <button onClick={handleZeroWaste} disabled={zeroLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow">
-                                {zeroLoading ? 'Analyzing...' : 'Generate Strategy'}
+
+                            <button onClick={handleZeroWaste} disabled={zeroLoading} className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-md transition">
+                                Generate Waste Prevention Strategy
                             </button>
-                            {zeroReply && (
-                                <div
-                                    className="mt-6 p-6 bg-slate-50 border rounded-xl text-slate-700 prose max-w-none space-y-2"
-                                    dangerouslySetInnerHTML={{ __html: marked.parse(zeroReply) }}
-                                />
+
+                            {zeroLoading && <FarmLoader text="Calculating processing & buyer strategies..." />}
+
+                            {zeroReply && !zeroLoading && (
+                                <div className="mt-6 p-6 bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl text-slate-800 shadow-inner">
+                                    <div className="flex items-center gap-2 text-emerald-900 font-bold mb-3 pb-2 border-b border-emerald-200">
+                                        <span>🧑‍🌾 Zero-Waste Strategy:</span>
+                                    </div>
+                                    <div className="prose max-w-none text-slate-800" dangerouslySetInnerHTML={{ __html: marked.parse(zeroReply) }} />
+                                </div>
                             )}
                         </div>
                     )}
 
+                    {/* MANDI PRICE INTEL TAB */}
                     {activeTab === 'mandi-price' && (
-                        <div className="max-w-3xl mx-auto bg-white p-6 rounded-2xl border shadow-sm">
-                            <h2 className="text-xl font-bold mb-4 text-emerald-800">Mandi Price Intelligence</h2>
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <input type="text" placeholder="Crop Name (e.g. Onion)" className="p-2.5 border rounded-lg" value={mandiForm.crop_name} onChange={e => setMandiForm({...mandiForm, crop_name: e.target.value})} />
-                                <input type="text" placeholder="Mandi / District (e.g. Madurai)" className="p-2.5 border rounded-lg" value={mandiForm.location} onChange={e => setMandiForm({...mandiForm, location: e.target.value})} />
+                        <div className="max-w-3xl mx-auto bg-white p-6 rounded-3xl border border-emerald-100 shadow-md">
+                            <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-slate-100">
+                                <div className="w-12 h-12 bg-emerald-100 text-3xl flex items-center justify-center rounded-2xl border border-emerald-200 shadow-sm">📊</div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-emerald-900">Mandi Price Intelligence</h2>
+                                    <p className="text-xs text-slate-500">Live price trends and estimated regional market rates</p>
+                                </div>
                             </div>
-                            <button onClick={handleMandiIntel} disabled={mandiLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-lg shadow">
-                                {mandiLoading ? 'Fetching Prices...' : 'Get Intelligence Report'}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <input type="text" placeholder="🍅 Crop Name (e.g. Onion, Coconut)" className="p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={mandiForm.crop_name} onChange={e => setMandiForm({...mandiForm, crop_name: e.target.value})} />
+                                <input type="text" placeholder="🏙️ Mandi / District (e.g. Pollachi)" className="p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none" value={mandiForm.location} onChange={e => setMandiForm({...mandiForm, location: e.target.value})} />
+                            </div>
+
+                            <button onClick={handleMandiIntel} disabled={mandiLoading} className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-md transition">
+                                Fetch Mandi Intelligence Report
                             </button>
-                            {mandiReply && (
-                                <div
-                                    className="mt-6 p-6 bg-slate-50 border rounded-xl text-slate-700 prose max-w-none space-y-2"
-                                    dangerouslySetInnerHTML={{ __html: marked.parse(mandiReply) }}
-                                />
+
+                            {mandiLoading && <FarmLoader text="Checking daily Mandi arrivals and rates..." />}
+
+                            {mandiReply && !mandiLoading && (
+                                <div className="mt-6 p-6 bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl text-slate-800 shadow-inner">
+                                    <div className="flex items-center gap-2 text-emerald-900 font-bold mb-3 pb-2 border-b border-emerald-200">
+                                        <span>🧑‍🌾 Mandi Intelligence Report:</span>
+                                    </div>
+                                    <div className="prose max-w-none text-slate-800" dangerouslySetInnerHTML={{ __html: marked.parse(mandiReply) }} />
+                                </div>
                             )}
                         </div>
                     )}
