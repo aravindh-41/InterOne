@@ -103,7 +103,7 @@ def ai_chat(req: ChatRequest):
             "Help farmers sell crops directly, suggest pricing, and suggest zero-waste channels."
         )
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=f"{system_prompt}\n\nUser Question: {req.message}",
         )
         return {"reply": response.text}
@@ -124,7 +124,7 @@ def zero_waste_analysis(req: ZeroWasteRequest):
             "Include estimated recovery pricing in INR/kg for each option."
         )
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=prompt,
         )
         return {"strategy": response.text}
@@ -151,8 +151,9 @@ def get_mandi_price_intelligence(req: MandiQueryRequest):
             f"4. **Best Selling Advice**: Clear actionable recommendation for the farmer."
         )
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=prompt,
+    
         )
         return {"report": response.text}
     except Exception as e:
