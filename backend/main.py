@@ -57,11 +57,8 @@ class ListingRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
-    return templates.TemplateResponse(
-        request=request, 
-        name="index.html"
-    )
-    
+    return templates.TemplateResponse("index.html", {"request": request})
+
 # DATABASE MARKETPLACE ENDPOINTS
 @app.get("/api/listings")
 def get_listings(db: Session = Depends(database.get_db)):
