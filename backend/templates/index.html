@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InterOne - Agricultural Marketplace & AI Advisory</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -210,9 +211,10 @@
                                 {chatLoading ? 'Thinking...' : 'Ask AI'}
                             </button>
                             {chatReply && (
-                                <div className="mt-6 p-4 bg-slate-50 border rounded-xl whitespace-pre-line text-slate-700">
-                                    {chatReply}
-                                </div>
+                                <div 
+                                    className="mt-6 p-6 bg-slate-50 border rounded-xl text-slate-700 prose max-w-none space-y-2"
+                                    dangerouslySetInnerHTML={{ __html: marked.parse(chatReply) }}
+                                />
                             )}
                         </div>
                     )}
