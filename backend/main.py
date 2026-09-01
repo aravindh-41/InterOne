@@ -650,15 +650,11 @@ def get_mandi_price_intelligence(
 from fastapi.responses import FileResponse
 import os
 
-
-# Locate dist folder directly in root
-frontend_dist = os.path.join(os.path.dirname(__file__), "dist")
+frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 
 if os.path.exists(frontend_dist):
-    # Serve static assets (CSS, images, JS bundles)
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
 
-    # Serve the main index.html for all non-API web routes
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
         if full_path.startswith("api"):
