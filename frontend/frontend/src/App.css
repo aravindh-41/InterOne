@@ -1,184 +1,1010 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+/* =========================================================
+   InterOne Smart Marketplace - App.css
+   Responsive alignment + clean form controls
+   ========================================================= */
 
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
+* {
+  box-sizing: border-box;
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
 }
 
-#center {
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #ffffff;
+  color: #1f2937;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+select {
+  max-width: 100%;
+}
+
+/* Main sections */
+.creative-section {
+  width: 100%;
+}
+
+/* =========================================================
+   MARKETPLACE FORM
+   ========================================================= */
+
+.marketplace-form {
+  width: 100%;
+  align-items: start;
+}
+
+.marketplace-field {
+  min-width: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
+  align-items: stretch;
 }
 
-#next-steps {
+.marketplace-field label {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.45rem;
+  color: #374151;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.marketplace-field input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0.65rem 0.75rem;
+  margin: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  outline: none;
+  background: #ffffff;
+  color: #1f2937;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.marketplace-field input::placeholder {
+  color: #9ca3af;
+}
+
+.marketplace-field input:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+}
+
+.marketplace-submit {
+  min-width: 0;
+}
+
+.marketplace-submit-button {
+  min-height: 46px;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.marketplace-submit-button:hover {
+  background: #15803d !important;
+  transform: translateY(-1px);
+}
+
+.marketplace-submit-button:active {
+  transform: translateY(0);
+}
+
+.marketplace-submit-button:focus-visible,
+button:focus-visible {
+  outline: 3px solid rgba(34, 197, 94, 0.3);
+  outline-offset: 2px;
+}
+
+/* =========================================================
+   ZERO-WASTE LOCATION FIELD
+   ========================================================= */
+
+.zw-location-field,
+.mandi-location-field {
+  min-width: 0;
+  width: 100%;
+}
+
+.zw-field-label,
+.mandi-field-label {
+  display: block;
+  margin-bottom: 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.zw-location-row,
+.mandi-location-row {
   display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
+  width: 100%;
+  min-width: 0;
+  gap: 0.55rem;
+  align-items: stretch;
 }
 
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
+.zw-modern-input,
+.mandi-modern-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
 }
 
-#next-steps ul {
-  list-style: none;
-  padding: 0;
+.zw-map-button,
+.mandi-map-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  background: #166534;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.zw-map-button:disabled,
+.mandi-map-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.zw-location-hint {
+  display: block;
+  margin-top: 0.35rem;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+/* =========================================================
+   ZERO-WASTE GAME
+   ========================================================= */
+
+.zero-waste-game {
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  overflow: hidden;
+  border: 1px solid #bbf7d0;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+}
+
+.game-header {
   display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
 }
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
+.game-road {
+  position: relative;
+  min-height: 180px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(#bfdbfe 0 45%, #86efac 45% 72%, #6b7280 72% 100%);
 }
 
-.ticks {
+.game-sun {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 2rem;
+}
+
+.game-field {
+  position: absolute;
+  left: 12px;
+  top: 60px;
+  font-size: 1.5rem;
+  letter-spacing: 0.2rem;
+  white-space: nowrap;
+}
+
+.game-tractor,
+.game-produce,
+.game-truck {
+  position: absolute;
+  z-index: 2;
+  font-size: 2.4rem;
+  transition: left 0.25s ease, opacity 0.25s ease;
+}
+
+.game-tractor {
+  left: 4%;
+  bottom: 22px;
+}
+
+.game-tractor.tractor-moving {
+  left: 28%;
+}
+
+.game-tractor.tractor-finished {
+  left: 50%;
+}
+
+.game-produce {
+  left: 40%;
+  bottom: 22px;
+  opacity: 0;
+}
+
+.game-produce.produce-loaded {
+  opacity: 1;
+}
+
+.game-truck {
+  right: 5%;
+  bottom: 22px;
+  opacity: 0.55;
+}
+
+.game-truck.truck-active {
+  opacity: 1;
+}
+
+.game-message {
+  min-height: 2.8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.game-progress-container {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #d1fae5;
+}
+
+.game-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: #16a34a;
+  transition: width 0.2s ease;
+}
+
+.game-tips {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  color: #166534;
+  font-size: 0.8rem;
+}
+
+/* =========================================================
+   AI FARMER - AKINATOR STYLE MOVABLE CHAT
+   ========================================================= */
+
+.ai-farmer-container {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1000;
+  width: min(540px, calc(100vw - 32px));
+  max-width: 540px;
+  user-select: none;
+  will-change: transform;
+}
+
+.ai-farmer-container.is-dragging {
+  cursor: grabbing;
+}
+
+.ai-farmer-popup {
   position: relative;
   width: 100%;
+  overflow: hidden;
+  border: 2px solid #22c55e;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 18% 35%, rgba(34, 197, 94, 0.14), transparent 30%),
+    linear-gradient(145deg, #ffffff 0%, #f0fdf4 100%);
+  box-shadow:
+    0 18px 45px rgba(15, 23, 42, 0.20),
+    0 0 0 5px rgba(34, 197, 94, 0.06);
+}
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
+/* Akinator-like top strip: this is the drag handle */
+.ai-farmer-drag-handle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 42px;
+  padding: 0.7rem 3.1rem 0.7rem 1rem;
+  border-bottom: 1px solid rgba(22, 101, 52, 0.12);
+  background: linear-gradient(90deg, #166534, #16a34a);
+  color: #ffffff;
+  cursor: grab;
+  touch-action: none;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.ai-farmer-container.is-dragging .ai-farmer-drag-handle {
+  cursor: grabbing;
+}
+
+.ai-farmer-drag-dots {
+  font-size: 1rem;
+  letter-spacing: -0.2rem;
+  opacity: 0.9;
+  transform: rotate(90deg);
+}
+
+.ai-farmer-drag-hint {
+  margin-left: auto;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  opacity: 0.9;
+}
+
+.ai-farmer-close {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  z-index: 5;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.14);
+  color: #ffffff;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ai-farmer-close:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Character + speech bubble layout */
+.ai-farmer-scene {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1rem 0.8rem;
+}
+
+.ai-farmer-character {
+  position: relative;
+  align-self: stretch;
+  min-height: 190px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    linear-gradient(to top, rgba(22, 101, 52, 0.18), transparent 65%),
+    linear-gradient(145deg, #dcfce7, #f0fdf4 55%, #ffffff);
+}
+
+.ai-farmer-character::before {
+  content: '🌾';
+  position: absolute;
+  left: 9px;
+  bottom: 8px;
+  font-size: 1.5rem;
+  opacity: 0.75;
+}
+
+.ai-farmer-character::after {
+  content: '☀️';
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  font-size: 1.15rem;
+}
+
+.ai-farmer-avatar-glow {
+  position: absolute;
+  width: 125px;
+  height: 125px;
+  top: 18px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.16);
+  filter: blur(2px);
+  animation: farmerGlow 2.5s ease-in-out infinite;
+}
+
+.ai-farmer-character img {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 145px;
+  height: 175px;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.12));
+  animation: farmerFloat 3s ease-in-out infinite;
+}
+
+.ai-farmer-status {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 8px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  background: #14532d;
+  color: #ffffff;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.14);
+}
+
+.ai-farmer-dialog {
+  position: relative;
+  min-width: 0;
+  border: 1px solid #bbf7d0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(22, 101, 52, 0.10);
+}
+
+.ai-farmer-speech-tail {
+  position: absolute;
+  left: -10px;
+  top: 52px;
+  width: 20px;
+  height: 20px;
+  border-left: 1px solid #bbf7d0;
+  border-bottom: 1px solid #bbf7d0;
+  background: #ffffff;
+  transform: rotate(45deg);
+}
+
+.ai-farmer-content {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  padding: 1.1rem 1.1rem 1rem;
+}
+
+.ai-farmer-question-label {
+  display: inline-flex;
+  margin-bottom: 0.55rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #15803d;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.ai-farmer-content strong {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #14532d;
+  font-size: 1.08rem;
+  line-height: 1.3;
+}
+
+.ai-farmer-content p {
+  margin: 0 0 0.85rem;
+  color: #4b5563;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.ai-farmer-ask {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  background: linear-gradient(90deg, #16a34a, #22c55e);
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 5px 12px rgba(22, 163, 74, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ai-farmer-ask:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 7px 16px rgba(22, 163, 74, 0.25);
+}
+
+.ai-farmer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 1rem 0.7rem;
+  border-top: 1px dashed #bbf7d0;
+  color: #6b7280;
+  font-size: 0.67rem;
+}
+
+.ai-farmer-footer span:last-child {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.ai-farmer-floating {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 999;
+  width: 70px;
+  height: 70px;
+  padding: 0.25rem;
+  border: 2px solid #22c55e;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #ffffff, #dcfce7);
+  box-shadow: 0 9px 22px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.18s ease;
+}
+
+.ai-farmer-floating:hover {
+  transform: translateY(-3px) rotate(-2deg);
+}
+
+.ai-farmer-floating img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@keyframes farmerFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes farmerGlow {
+  0%, 100% {
+    transform: scale(0.96);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.9;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE LAYOUT
+   ========================================================= */
+
+@media (max-width: 850px) {
+  .marketplace-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
+  .marketplace-submit {
+    grid-column: 1 / -1 !important;
   }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
+}
+
+@media (max-width: 600px) {
+  .marketplace-form,
+  .zero-waste-form {
+    grid-template-columns: 1fr !important;
   }
+
+  .marketplace-submit {
+    grid-column: 1 / -1 !important;
+  }
+
+  .zw-location-row,
+  .mandi-location-row {
+    flex-direction: column;
+  }
+
+  .zw-map-button,
+  .mandi-map-button {
+    width: 100%;
+  }
+
+  .game-road {
+    min-height: 150px;
+  }
+
+  .game-tips {
+    justify-content: center;
+  }
+
+  .ai-farmer-container {
+    right: 12px;
+    bottom: 12px;
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+  }
+
+  .ai-farmer-scene {
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 0.7rem;
+    padding: 0.75rem 0.75rem 0.6rem;
+  }
+
+  .ai-farmer-character {
+    min-height: 165px;
+  }
+
+  .ai-farmer-character img {
+    width: 105px;
+    height: 150px;
+  }
+
+  .ai-farmer-avatar-glow {
+    width: 95px;
+    height: 95px;
+  }
+
+  .ai-farmer-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .ai-farmer-floating {
+    right: 14px;
+    bottom: 14px;
+  }
+}
+
+
+@media (max-width: 430px) {
+  .ai-farmer-scene {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-farmer-character {
+    min-height: 145px;
+  }
+
+  .ai-farmer-character img {
+    width: 120px;
+    height: 140px;
+  }
+
+  .ai-farmer-avatar-glow {
+    width: 100px;
+    height: 100px;
+    top: 8px;
+  }
+
+  .ai-farmer-speech-tail {
+    display: none;
+  }
+}
+
+/* =========================================================
+   PRODUCE IMAGE UPLOAD
+   ========================================================= */
+
+.produce-image-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px dashed #86efac;
+  border-radius: 12px;
+  background: #f0fdf4;
+  box-sizing: border-box;
+  cursor: pointer;
+  font-family: inherit;
+  color: #374151;
+  transition: all 0.25s ease;
+}
+
+.produce-image-input:hover {
+  border-color: #22c55e;
+  background: #ecfdf5;
+}
+
+.produce-image-input:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
+}
+
+/* Browser file button */
+
+.produce-image-input::file-selector-button {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  margin-right: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.produce-image-input::file-selector-button:hover {
+  background: #15803d;
+}
+
+/* Upload information */
+
+.produce-image-hint {
+  display: block;
+  margin-top: 0.45rem;
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+/* Image preview */
+
+.produce-image-preview {
+  margin-top: 0.8rem;
+  padding: 0.8rem;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  background: #f0fdf4;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.produce-image-preview img {
+  width: 130px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid #86efac;
+  display: block;
+}
+
+/* =========================================================
+   AI FARMER PRODUCT ANALYSIS POPUP
+   ========================================================= */
+
+.ai-farmer-container {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  z-index: 9999;
+  width: 320px;
+  max-width: calc(100vw - 30px);
+}
+
+.ai-farmer-popup {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 1.2rem;
+  border-radius: 20px;
+
+  background: #ffffff;
+
+  border: 2px solid #bbf7d0;
+
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.16);
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
+.ai-farmer-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+
+  width: 30px;
+  height: 30px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #f3f4f6;
+  color: #374151;
+
+  font-size: 1.3rem;
+  line-height: 1;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-farmer-close:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+
+/* =========================================================
+   MESSAGE
+   ========================================================= */
+
+.ai-farmer-analysis-message {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 0.2rem 1.5rem 0;
+
+  text-align: center;
+}
+
+.ai-farmer-analysis-message strong {
+  display: block;
+
+  color: #166534;
+
+  font-size: 1rem;
+
+  line-height: 1.4;
+}
+
+.ai-farmer-analysis-message p {
+  margin: 0.45rem 0 0;
+
+  color: #6b7280;
+
+  font-size: 0.82rem;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   AI FARMER IMAGE
+   ========================================================= */
+
+.ai-farmer-character {
+  width: 150px;
+  height: 150px;
+
+  margin: 0.7rem auto 0;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+.ai-farmer-character img {
+  width: 145px;
+  height: 145px;
+
+  object-fit: contain;
+
+  display: block;
+}
+
+
+/* =========================================================
+   ANALYSE BUTTON
+   ========================================================= */
+
+.ai-farmer-analyse-button {
+  width: 85%;
+
+  margin-top: 0.4rem;
+
+  padding: 0.7rem 1rem;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #16a34a;
+  color: #ffffff;
+
+  font-size: 0.9rem;
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ai-farmer-analyse-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 5px 15px rgba(22, 163, 74, 0.25);
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .ai-farmer-container {
+    right: 12px;
+    bottom: 12px;
+
+    width: 290px;
+
+    max-width: calc(100vw - 24px);
+  }
+
+  .ai-farmer-popup {
+    padding: 1rem;
+  }
+
+  .ai-farmer-character {
+    width: 130px;
+    height: 130px;
+  }
+
+  .ai-farmer-character img {
+    width: 125px;
+    height: 125px;
+  }
+
+  .ai-farmer-analysis-message strong {
+    font-size: 0.9rem;
+  }
+
+  .ai-farmer-analysis-message p {
+    font-size: 0.78rem;
+  }
+
 }
