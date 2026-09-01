@@ -275,16 +275,27 @@ const getCurrentLocation = () => {
    // BACKEND CONNECTION
   // =========================================================
   useEffect(() => {
-    fetch(`${API_BASE_URL}/`)
-      .then((res) => res.json())
-      .then((data) => setBackendStatus(data.status || 'Running'))
-      .catch((err) => {
-        console.error('Backend fetch error:', err)
-        setBackendStatus('Offline')
-      })
-    fetchListings()
-  }, [])
-  // =========================================================
+  fetch("/api/health")
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+      return res.json();
+    })
+    .then((data) => {
+      if (data && data.status === "Running") {
+        setBackendStatus("Online");
+      } else {
+        setBackendStatus("Offline");
+      }
+    })
+    .catch((err) => {
+      console.error("Backend fetch error:", err);
+      setBackendStatus("Offline");
+    });
+    
+  fetchListings();
+}, []);
+
+// =========================================================
   // AI CHAT
   // =========================================================
 
