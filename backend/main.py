@@ -649,7 +649,7 @@ def get_mandi_price_intelligence(
             "report": f"Mandi Intel Error: {str(e)}"
         }
 
-        from fastapi.staticfiles import StaticFiles
+     from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 
@@ -658,12 +658,10 @@ frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "front
 if os.path.exists(frontend_dist):
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
 
-    # Serve React app on the home route
     @app.get("/")
     async def serve_index():
         return FileResponse(os.path.join(frontend_dist, "index.html"))
 
-    # Catch-all for React Client-Side Router pages
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
         if full_path.startswith("api"):
