@@ -209,7 +209,7 @@ Keep the answer concise and farmer-friendly."""
         if not client:
             raise Exception("Gemini client not initialized. Check GEMINI_API_KEY.")
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=[
                 prompt,
                 {
@@ -235,7 +235,7 @@ def ai_chat(req: ChatRequest):
             "Help farmers sell crops directly, suggest pricing, and suggest zero-waste channels."
         )
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=f"{system_prompt}\n\nUser Question: {req.message}",
         )
         return {"reply": response.text}
@@ -259,7 +259,7 @@ def zero_waste_analysis(req: ZerowasteRequest):
             if not client:
                 raise Exception("Gemini client not initialized. Check GEMINI_API_KEY.")
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.6-flash",
                 contents=prompt,
             )
             return {"strategy": response.text}
@@ -291,7 +291,7 @@ def get_mandi_price_intelligence(req: MandiQueryRequest):
             "4. **Best Selling Advice**: Clear actionable recommendation for the farmer."
         )
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.6-flash",
             contents=prompt,
         )
         return {"report": response.text}
@@ -309,10 +309,10 @@ if os.path.exists(frontend_dist):
         return FileResponse(os.path.join(frontend_dist, "index.html"))
 
     @app.get("/{full_path:path}")
-    async def serve_react_app(full_path: str):
-        if full_path.startswith("api"):
-            return None
-        file_path = os.path.join(frontend_dist, full_path)
-        if os.path.exists(file_path) and os.path.isfile(file_path):
-            return FileResponse(file_path)
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+async def serve_react_app(full_path: str):
+    if full_path.startswith("api"):
+        raise HTTPException(status_code=404, detail="API route not found")
+    file_path = os.path.join(frontend_dist, full_path)
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        return FileResponse(file_path)
+    return FileResponse(os.path.join(frontend_dist, "index.html"))
