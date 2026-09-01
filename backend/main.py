@@ -153,10 +153,16 @@ class ListingRequest(BaseModel):
 # ROOT ENDPOINT
 # =========================================================
 
-@app.get("/api/health")
-def read_root():
-    return {"status": "Running", "message": "InterOne API is live"}
-
+useEffect(() => {
+  fetch("/api/health")
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.status === "Running") {
+        setBackendStatus("Online");
+      }
+    })
+    .catch(() => setBackendStatus("Offline"));
+}, []);
 
 # =========================================================
 # HELPER: DATABASE EXPIRATION CLEANUP
