@@ -825,25 +825,29 @@ image_path: imagePath
         </div>
 
         <span
-          style={{
-            background:
-              backendStatus.includes('Running')
-                ? '#dcfce7'
-                : '#fee2e2',
-
-            color:
-              backendStatus.includes('Running')
-                ? '#15803d'
-                : '#b91c1c',
-
-            padding: '0.5rem 0.9rem',
-            borderRadius: '20px',
-            fontSize: '0.85rem',
-            fontWeight: 'bold'
-          }}
-        >
-          ● Backend: {backendStatus}
-        </span>
+  style={{
+    background: backendStatus === 'Online' ? '#dcfce7' : '#fee2e2',
+    color: backendStatus === 'Online' ? '#15803d' : '#b91c1c',
+    padding: '0.5rem 0.9rem',
+    borderRadius: '20px',
+    fontSize: '0.85rem',
+    fontWeight: 'bold',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.4rem'
+  }}
+>
+  <span
+    style={{
+      width: '8px',
+      height: '8px',
+      borderRadius: '50%',
+      backgroundColor: backendStatus === 'Online' ? '#22c55e' : '#ef4444',
+      display: 'inline-block'
+    }}
+  ></span>
+  Backend: {backendStatus}
+</span>
       </header>
 
       {/* =====================================================
