@@ -650,7 +650,8 @@ def get_mandi_price_intelligence(
 from fastapi.responses import FileResponse
 import os
 
-frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+# Point to double-nested frontend/frontend/dist directory
+frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "frontend", "dist")
 
 if os.path.exists(frontend_dist):
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
