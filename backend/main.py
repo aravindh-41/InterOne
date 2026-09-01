@@ -153,12 +153,9 @@ class ListingRequest(BaseModel):
 # ROOT ENDPOINT
 # =========================================================
 
-@app.get("/")
+@app.get("/api/health")
 def read_root():
-    return {
-        "status": "Running",
-        "message": "InterOne API is live"
-    }
+    return {"status": "Running", "message": "InterOne API is live"}
 
 
 # =========================================================
@@ -650,12 +647,17 @@ def get_mandi_price_intelligence(
 from fastapi.responses import FileResponse
 import os
 
-# Point to double-nested frontend/frontend/dist directory
 frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "frontend", "dist")
 
 if os.path.exists(frontend_dist):
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
 
+    # Serve React app on the home route
+    @app.get("/")
+    async def serve_index():
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+
+    # Catch-all for React Client-Side Router pages
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
         if full_path.startswith("api"):
