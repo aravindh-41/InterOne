@@ -650,8 +650,9 @@ def get_mandi_price_intelligence(
 from fastapi.responses import FileResponse
 import os
 
-# Locate the compiled React frontend folder
-frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+
+# Locate dist folder directly in root
+frontend_dist = os.path.join(os.path.dirname(__file__), "dist")
 
 if os.path.exists(frontend_dist):
     # Serve static assets (CSS, images, JS bundles)
