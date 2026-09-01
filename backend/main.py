@@ -648,8 +648,7 @@ def get_mandi_price_intelligence(
         return {
             "report": f"Mandi Intel Error: {str(e)}"
         }
-
-     from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 
