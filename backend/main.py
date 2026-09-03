@@ -15,7 +15,9 @@ from sqlalchemy.orm import Session
 
 import database
 import models
-import base64  
+import io
+import base64
+from PIL import Image
 
 # ENVIRONMENT SETUP
 load_dotenv()
@@ -204,34 +206,42 @@ def create_listing(req: ListingRequest, db: Session = Depends(database.get_db)):
     db.refresh(new_listing)
     return {"status": "success", "listing": new_listing}
 
-# PRODUCT IMAGE UPLOAD
-@app.post("/api/upload-image")
+# PRODUCT IMAGE UPLOAD@app.post("/api/upload-image")
 async def upload_product_image(file: UploadFile = File(...)):
-    MAX_SIZE = 2 * 1024 * 1024
     allowed_types = {"image/jpeg", "image/png", "image/webp"}
     if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=400,
-            detail="Only JPG, PNG, and WEBP images are allowed.",
-        )
-    contents = await file.read()
-    if len(contents) > MAX_SIZE:
-        raise HTTPException(
-            status_code=400,
-            detail="Image must be 2 MB or smaller.",
-        )
-
-    # Convert binary image data directly into a persistent Base64 Data URI
-    base64_data = base64.b64encode(contents).decode("utf-8")
-    data_url = f"data:{file.content_type};base64,{base64_data}"
-
-    return {
-        "status": "success",
-        "filename": file.filename or "uploaded_image",
-        "image_path": data_url,
-        "size_kb": round(len(contents) / 1024, 2),
-    }
+        raise HTTPException(status_code=400, detail="Only JPG, PNG, and WEBP images are allowed.")
     
+    contents = await file.read()
+    if len(contents) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image must be under 5MB.")
+
+    try:
+        # Resize and compress image using Pillow
+        img = Image.open(io.BytesIO(contents))
+        img.thumbnail((800, 800))  # Resize max dimensions to 800px
+        
+        # Convert transparent images to RGB
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+
+        buffer = io.BytesIO()
+        img.save(buffer, format="JPEG", quality=70)  # Compress quality to 70%
+        compressed_bytes = buffer.getvalue()
+
+        # Convert compressed image to Base64
+        base64_data = base64.b64encode(compressed_bytes).decode("utf-8")
+        data_url = f"data:image/jpeg;base64,{base64_data}"
+
+        return {
+            "status": "success",
+            "filename": file.filename or "produce.jpg",
+            "image_path": data_url,
+            "size_kb": round(len(compressed_bytes) / 1024, 2),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image processing failed: {str(e)}")
+        
 # AI PRODUCE QUALITY ANALYZER
 @app.post("/api/ai/analyze-produce")
 async def analyze_produce(crop_name: str = Form(...), file: UploadFile = File(...)):

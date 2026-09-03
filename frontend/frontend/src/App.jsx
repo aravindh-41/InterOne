@@ -2037,28 +2037,26 @@ image_path: imagePath
                   {/* PRODUCT IMAGE */}
 
                   {item.image_path ? (
-                    <img
-                      src={
-                        `${API_BASE_URL}${item.image_path}`
-                      }
-                      alt={
-                        `${item.crop_name} produce`
-                      }
-                      onClick={() =>
-                        handleProductImageClick(item)
-                      }
-                      title="Click to visually analyse this product"
-                      style={{
-                        width: '100%',
-                        height: '190px',
-                        objectFit: 'cover',
-                        borderRadius: '10px',
-                        marginBottom: '0.9rem',
-                        display: 'block',
-                        cursor: 'pointer'
-                      }}
-                    />
-                  ) : (
+  <img
+    src={
+      item.image_path.startsWith('data:') || item.image_path.startsWith('http')
+        ? item.image_path
+        : `${API_BASE_URL}${item.image_path}`
+    }
+    alt={`${item.crop_name} produce`}
+    onClick={() => handleProductImageClick(item)}
+    title="Click to visually analyse this product"
+    style={{
+      width: '100%',
+      height: '190px',
+      objectFit: 'cover',
+      borderRadius: '10px',
+      marginBottom: '0.9rem',
+      display: 'block',
+      cursor: 'pointer'
+    }}
+  />
+) : (
                     <div
                       style={{
                         width: '100%',
