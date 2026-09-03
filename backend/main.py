@@ -58,9 +58,9 @@ def generate_ai_content(prompt: str, image_data: bytes = None, mime_type: str = 
         
     # Diverse fallback list across flash and lite models to bypass temporary 503 high demand spikes
     models_to_try = [
+        "gemini-3.6-flash",
+        "gemini-3.5-flash-lite",
         "gemini-2.5-flash",
-        "gemini-2.5-flash-lite",
-        "gemini-2.0-flash",
         "gemini-1.5-flash"
     ]
     
