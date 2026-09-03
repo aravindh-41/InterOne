@@ -30,22 +30,20 @@ models.Base.metadata.create_all(bind=database.engine)
 def patch_database_schema():
     """Automatically patches missing columns in remote MySQL database without wiping data."""
     with database.engine.connect() as conn:
-        try:
-            conn.execute(text("ALTER TABLE listings ADD COLUMN latitude FLOAT NULL;"))
-            conn.commit()
-            print("Database migration: Added 'latitude' column.")
-        except Exception:
-            pass  # Column already exists
+        columns_to_add = [
+            ("latitude", "FLOAT NULL"),
+            ("longitude", "FLOAT NULL"),
+            ("image_path", "VARCHAR(255) NULL"),
+        ]
+        for col_name, col_type in columns_to_add:
+            try:
+                conn.execute(text(f"ALTER TABLE listings ADD COLUMN {col_name} {col_type};"))
+                conn.commit()
+                print(f"Database migration: Added '{col_name}' column.")
+            except Exception:
+                pass  # Column already exists
 
-        try:
-            conn.execute(text("ALTER TABLE listings ADD COLUMN longitude FLOAT NULL;"))
-            conn.commit()
-            print("Database migration: Added 'longitude' column.")
-        except Exception:
-            pass  # Column already exists
-
-patch_database_schema()
-
+patch_database_schema()            
 # FASTAPI APP
 app = FastAPI(title="InterOne API")
 
