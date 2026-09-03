@@ -28,22 +28,25 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 models.Base.metadata.create_all(bind=database.engine)
 
 def patch_database_schema():
-    """Automatically patches missing columns in remote MySQL database without wiping data."""
+    """Automatically patches all missing columns in remote MySQL database on startup."""
     with database.engine.connect() as conn:
         columns_to_add = [
             ("latitude", "FLOAT NULL"),
             ("longitude", "FLOAT NULL"),
             ("image_path", "VARCHAR(255) NULL"),
+            ("created_at", "DATETIME NULL"),
+            ("expires_at", "DATETIME NULL"),
         ]
         for col_name, col_type in columns_to_add:
             try:
                 conn.execute(text(f"ALTER TABLE listings ADD COLUMN {col_name} {col_type};"))
                 conn.commit()
-                print(f"Database migration: Added '{col_name}' column.")
+                print(f"Database migration: Added '{col_name}' column successfully.")
             except Exception:
                 pass  # Column already exists
 
-patch_database_schema()            
+patch_database_schema()
+
 # FASTAPI APP
 app = FastAPI(title="InterOne API")
 
