@@ -14,6 +14,10 @@ from sqlalchemy.orm import Session
 import database
 import models
 
+import os
+import time
+from google import genai
+
 # ENVIRONMENT SETUP
 load_dotenv()
 
@@ -50,29 +54,43 @@ client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 # HELPER FUNCTION FOR GEMINI RETRIES & FALLBACK
 def generate_ai_content(prompt: str, image_data: bytes = None, mime_type: str = None):
     if not client:
-        raise Exception("Gemini client not initialized. Check GEMINI_API_KEY.")
+        return "AI Service Unavailable: GEMINI_API_KEY environment variable is missing on Render."
         
-    models_to_try = ["gemini-3.6-flash", "gemini-3.6-flash"]
+    # Diverse fallback list across flash and lite models to bypass temporary 503 high demand spikes
+    models_to_try = [
+        "gemini-2.5-flash",
+        "gemini-2.5-flash-lite",
+        "gemini-2.0-flash",
+        "gemini-1.5-flash"
+    ]
+    
     last_error = None
     
     for model_name in models_to_try:
-        try:
-            contents = [prompt]
-            if image_data and mime_type:
-                contents.append({"inline_data": {"mime_type": mime_type, "data": image_data}})
-            
-            response = client.models.generate_content(
-                model=model_name,
-                contents=contents
-            )
-            return response.text
-        except Exception as e:
-            last_error = e
-            if "503" in str(e) or "UNAVAILABLE" in str(e):
-                continue
-            raise e
-    raise last_error
+        for attempt in range(2):  # Try each model twice with a short delay
+            try:
+                contents = [prompt]
+                if image_data and mime_type:
+                    contents.append({"inline_data": {"mime_type": mime_type, "data": image_data}})
+                
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=contents
+                )
+                if response and response.text:
+                    return response.text
+            except Exception as e:
+                last_error = e
+                err_str = str(e).upper()
+                # Pause briefly on capacity issues before trying the next attempt or model
+                if "503" in err_str or "UNAVAILABLE" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    time.sleep(1.2 * (attempt + 1))
+                    continue
+                # For non-503 errors (e.g. invalid arguments), fail immediately
+                raise e
 
+    print(f"All Gemini models exhausted. Last error: {last_error}")
+    return "The AI service is currently experiencing high server demand across all models. Please try again in a few moments."
 # PYDANTIC SCHEMAS
 class ChatRequest(BaseModel):
     message: str
