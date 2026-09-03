@@ -1,22 +1,20 @@
 import os
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, Form
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from google import genai
 from pydantic import BaseModel
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 import database
 import models
-
-import os
-import time
-from google import genai
 
 # ENVIRONMENT SETUP
 load_dotenv()
@@ -26,11 +24,39 @@ BASE_DIR = Path(__file__).resolve().parent
 UPLOAD_DIR = BASE_DIR / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-# DATABASE CREATION
+# DATABASE CREATION & AUTO-MIGRATION
 models.Base.metadata.create_all(bind=database.engine)
+
+def patch_database_schema():
+    """Automatically patches missing columns in remote MySQL database without wiping data."""
+    with database.engine.connect() as conn:
+        try:
+            conn.execute(text("ALTER TABLE listings ADD COLUMN latitude FLOAT NULL;"))
+            conn.commit()
+            print("Database migration: Added 'latitude' column.")
+        except Exception:
+            pass  # Column already exists
+
+        try:
+            conn.execute(text("ALTER TABLE listings ADD COLUMN longitude FLOAT NULL;"))
+            conn.commit()
+            print("Database migration: Added 'longitude' column.")
+        except Exception:
+            pass  # Column already exists
+
+patch_database_schema()
 
 # FASTAPI APP
 app = FastAPI(title="InterOne API")
+
+# CATCH-ALL EXCEPTION HANDLER (Prevents raw HTML Internal Server Errors)
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    print(f"Server Error on {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Backend Error: {str(exc)}"}
+    )
 
 # SERVE UPLOADED IMAGES
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
@@ -56,7 +82,6 @@ def generate_ai_content(prompt: str, image_data: bytes = None, mime_type: str = 
     if not client:
         return "AI Service Unavailable: GEMINI_API_KEY environment variable is missing on Render."
         
-    # Diverse fallback list across flash and lite models to bypass temporary 503 high demand spikes
     models_to_try = [
         "gemini-3.6-flash",
         "gemini-3.5-flash-lite",
@@ -82,15 +107,14 @@ def generate_ai_content(prompt: str, image_data: bytes = None, mime_type: str = 
             except Exception as e:
                 last_error = e
                 err_str = str(e).upper()
-                # Pause briefly on capacity issues before trying the next attempt or model
                 if "503" in err_str or "UNAVAILABLE" in err_str or "RESOURCE_EXHAUSTED" in err_str:
                     time.sleep(1.2 * (attempt + 1))
                     continue
-                # For non-503 errors (e.g. invalid arguments), fail immediately
                 raise e
 
     print(f"All Gemini models exhausted. Last error: {last_error}")
     return "The AI service is currently experiencing high server demand across all models. Please try again in a few moments."
+
 # PYDANTIC SCHEMAS
 class ChatRequest(BaseModel):
     message: str
@@ -116,7 +140,7 @@ class ListingRequest(BaseModel):
     contact: str
     image_path: str | None = None
 
-# HEALTH CHECK ENDPOINT (Replaces JS code block)
+# HEALTH CHECK ENDPOINT
 @app.get("/api/health")
 def health_check():
     return {"status": "Running", "message": "InterOne API is live"}
@@ -186,7 +210,7 @@ async def upload_product_image(file: UploadFile = File(...)):
             status_code=400,
             detail="Image must be 2 MB or smaller.",
         )
-    extension = Path(file.filename or "").suffix.lower()
+    extension = Path(file.filename or "").suffix.lower() or ".jpg"
     timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")
     filename = f"product_{timestamp_str}{extension}"
     file_path = UPLOAD_DIR / filename
@@ -250,21 +274,12 @@ Give 2-4 practical actions the farmer should take.
 Keep the answer concise and farmer-friendly."""
 
     try:
-        if not client:
-            raise Exception("Gemini client not initialized. Check GEMINI_API_KEY.")
-        response = client.models.generate_content(
-            model="gemini-3.6-flash",
-            contents=[
-                prompt,
-                {
-                    "inline_data": {
-                        "mime_type": file.content_type,
-                        "data": image_data,
-                    }
-                },
-            ],
+        analysis_text = generate_ai_content(
+            prompt=prompt,
+            image_data=image_data,
+            mime_type=file.content_type
         )
-        return {"status": "success", "crop": crop_name, "analysis": response.text}
+        return {"status": "success", "crop": crop_name, "analysis": analysis_text}
     except Exception as e:
         return {"status": "error", "crop": crop_name, "analysis": f"AI Analysis Error: {str(e)}"}
 
