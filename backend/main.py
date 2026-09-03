@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 import database
 import models
+import base64  
 
 # ENVIRONMENT SETUP
 load_dotenv()
@@ -28,12 +29,12 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 models.Base.metadata.create_all(bind=database.engine)
 
 def patch_database_schema():
-    """Automatically patches all missing columns in remote MySQL database on startup."""
+    """Automatically patches missing columns and expands image_path to LONGTEXT for persistent Base64 images."""
     with database.engine.connect() as conn:
         columns_to_add = [
             ("latitude", "FLOAT NULL"),
             ("longitude", "FLOAT NULL"),
-            ("image_path", "VARCHAR(255) NULL"),
+            ("image_path", "LONGTEXT NULL"),
             ("created_at", "DATETIME NULL"),
             ("expires_at", "DATETIME NULL"),
         ]
@@ -44,6 +45,14 @@ def patch_database_schema():
                 print(f"Database migration: Added '{col_name}' column successfully.")
             except Exception:
                 pass  # Column already exists
+
+        # Upgrade existing VARCHAR(255) column to LONGTEXT if it already existed
+        try:
+            conn.execute(text("ALTER TABLE listings MODIFY COLUMN image_path LONGTEXT NULL;"))
+            conn.commit()
+            print("Database migration: Updated 'image_path' to LONGTEXT.")
+        except Exception as e:
+            print(f"Column modify note: {e}")
 
 patch_database_schema()
 
@@ -211,19 +220,18 @@ async def upload_product_image(file: UploadFile = File(...)):
             status_code=400,
             detail="Image must be 2 MB or smaller.",
         )
-    extension = Path(file.filename or "").suffix.lower() or ".jpg"
-    timestamp_str = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")
-    filename = f"product_{timestamp_str}{extension}"
-    file_path = UPLOAD_DIR / filename
-    with open(file_path, "wb") as buffer:
-        buffer.write(contents)
+
+    # Convert binary image data directly into a persistent Base64 Data URI
+    base64_data = base64.b64encode(contents).decode("utf-8")
+    data_url = f"data:{file.content_type};base64,{base64_data}"
+
     return {
         "status": "success",
-        "filename": filename,
-        "image_path": f"/uploads/{filename}",
+        "filename": file.filename or "uploaded_image",
+        "image_path": data_url,
         "size_kb": round(len(contents) / 1024, 2),
     }
-
+    
 # AI PRODUCE QUALITY ANALYZER
 @app.post("/api/ai/analyze-produce")
 async def analyze_produce(crop_name: str = Form(...), file: UploadFile = File(...)):

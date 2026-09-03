@@ -1,14 +1,14 @@
+from datetime import datetime
 from sqlalchemy import (
     Column,
     Integer,
     String,
     Float,
-    DateTime
+    DateTime,
+    Text
 )
 
 from database import Base
-
-from datetime import datetime
 
 
 # =========================================================
@@ -57,6 +57,7 @@ class DBListing(Base):
         Float,
         nullable=False
     )
+
     # -----------------------------------------------------
     # LOCATION & CONTACT
     # -----------------------------------------------------
@@ -81,12 +82,13 @@ class DBListing(Base):
         String(20),
         nullable=False
     )
+
     # -----------------------------------------------------
-    # PRODUCT IMAGE
+    # PRODUCT IMAGE (Stored as Base64 Data String)
     # -----------------------------------------------------
 
     image_path = Column(
-        String(255),
+        Text,
         nullable=True
     )
 
