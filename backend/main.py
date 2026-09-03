@@ -47,6 +47,32 @@ if not GEMINI_API_KEY:
 
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
+# HELPER FUNCTION FOR GEMINI RETRIES & FALLBACK
+def generate_ai_content(prompt: str, image_data: bytes = None, mime_type: str = None):
+    if not client:
+        raise Exception("Gemini client not initialized. Check GEMINI_API_KEY.")
+        
+    models_to_try = ["gemini-3.6-flash", "gemini-3.6-flash"]
+    last_error = None
+    
+    for model_name in models_to_try:
+        try:
+            contents = [prompt]
+            if image_data and mime_type:
+                contents.append({"inline_data": {"mime_type": mime_type, "data": image_data}})
+            
+            response = client.models.generate_content(
+                model=model_name,
+                contents=contents
+            )
+            return response.text
+        except Exception as e:
+            last_error = e
+            if "503" in str(e) or "UNAVAILABLE" in str(e):
+                continue
+            raise e
+    raise last_error
+
 # PYDANTIC SCHEMAS
 class ChatRequest(BaseModel):
     message: str
@@ -228,53 +254,38 @@ Keep the answer concise and farmer-friendly."""
 @app.post("/api/ai/chat")
 def ai_chat(req: ChatRequest):
     try:
-        if not client:
-            raise Exception("Gemini client not initialized. Check GEMINI_API_KEY.")
         system_prompt = (
             "You are InterOne AI, an agricultural marketplace assistant in India. "
             "Help farmers sell crops directly, suggest pricing, and suggest zero-waste channels."
         )
-        response = client.models.generate_content(
-            model="gemini-3.6-flash",
-            contents=f"{system_prompt}\n\nUser Question: {req.message}",
-        )
-        return {"reply": response.text}
+        full_prompt = f"{system_prompt}\n\nUser Question: {req.message}"
+        reply_text = generate_ai_content(prompt=full_prompt)
+        return {"reply": reply_text}
     except Exception as e:
         return {"reply": f"AI Error: {str(e)}"}
 
 # ZERO-WASTE AI
 @app.post("/api/ai/zero-waste")
 def zero_waste_analysis(req: ZerowasteRequest):
-    prompt = (
-        f"A farmer in {req.location} has {req.quantity_kg} kg of unsold/surplus "
-        f"{req.crop_name} in '{req.condition}' condition.\n"
-        "Provide a structured zero-waste strategy with 3 specific local secondary buyer channels in South India:\n"
-        "1. **Food Processing / Value Addition** (e.g., pickle/jam makers, dehydration units)\n"
-        "2. **Livestock & Feed** (e.g., cattle farms, poultry feed processors)\n"
-        "3. **Organic / Energy Recovery** (e.g., vermicomposting, biogas units)\n"
-        "Include estimated recovery pricing in INR/kg for each option."
-    )
-    for attempt in range(2):
-        try:
-            if not client:
-                raise Exception("Gemini client not initialized. Check GEMINI_API_KEY.")
-            response = client.models.generate_content(
-                model="gemini-3.6-flash",
-                contents=prompt,
-            )
-            return {"strategy": response.text}
-        except Exception as e:
-            if attempt == 1:
-                return {
-                    "strategy": f"Google AI Server Busy (503). Please click 'Start Smart Redirection' once more to retry. Details: {str(e)}"
-                }
+    try:
+        prompt = (
+            f"A farmer in {req.location} has {req.quantity_kg} kg of unsold/surplus "
+            f"{req.crop_name} in '{req.condition}' condition.\n"
+            "Provide a structured zero-waste strategy with 3 specific local secondary buyer channels in South India:\n"
+            "1. **Food Processing / Value Addition** (e.g., pickle/jam makers, dehydration units)\n"
+            "2. **Livestock & Feed** (e.g., cattle farms, poultry feed processors)\n"
+            "3. **Organic / Energy Recovery** (e.g., vermicomposting, biogas units)\n"
+            "Include estimated recovery pricing in INR/kg for each option."
+        )
+        strategy_text = generate_ai_content(prompt=prompt)
+        return {"strategy": strategy_text}
+    except Exception as e:
+        return {"strategy": f"Zero-Waste Error: {str(e)}"}
 
 # MANDI PRICE INTELLIGENCE
 @app.post("/api/ai/mandi-price")
 def get_mandi_price_intelligence(req: MandiQueryRequest):
     try:
-        if not client:
-            raise Exception("Gemini client not initialized. Check GEMINI_API_KEY.")
         prompt = (
             "You are an expert agricultural economist in South India.\n"
             "Provide a concise Mandi Price Intelligence report for:\n"
@@ -290,11 +301,8 @@ def get_mandi_price_intelligence(req: MandiQueryRequest):
             "3. **7-Day Price Trend**: State if prices are UP, DOWN, or STABLE and why.\n"
             "4. **Best Selling Advice**: Clear actionable recommendation for the farmer."
         )
-        response = client.models.generate_content(
-            model="gemini-3.6-flash",
-            contents=prompt,
-        )
-        return {"report": response.text}
+        report_text = generate_ai_content(prompt=prompt)
+        return {"report": report_text}
     except Exception as e:
         return {"report": f"Mandi Intel Error: {str(e)}"}
 

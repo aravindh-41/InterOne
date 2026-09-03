@@ -911,7 +911,7 @@ image_path: imagePath
       whiteSpace: 'nowrap'
     }}
   >
-    📊 Market Price Intelligence
+    📊 Mandi Price Intelligence
   </button>
 
   {/* 4. AI ADVISORY (Swapped to fourth position) */}
@@ -1504,7 +1504,7 @@ image_path: imagePath
           <div>
 
             <h3>
-              📊 Market Price Intelligence
+              📊 Mandi Price Intelligence
             </h3>
 
             <p style={{ color: '#666' }}>
