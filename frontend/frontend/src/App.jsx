@@ -681,28 +681,25 @@ image_path: imagePath
       setProductAnalysisLoading(true)
       setProductAnalysis('')
 
+      // Handle both Base64 data URIs and standard local URL paths
       const imageUrl =
-        `${API_BASE_URL}${selectedProduct.image_path}`
+        selectedProduct.image_path.startsWith('data:') || selectedProduct.image_path.startsWith('http')
+          ? selectedProduct.image_path
+          : `${API_BASE_URL}${selectedProduct.image_path}`
 
-      const imageResponse =
-        await fetch(imageUrl)
+      const imageResponse = await fetch(imageUrl)
 
       if (!imageResponse.ok) {
-        throw new Error(
-          'Unable to load product image.'
-        )
+        throw new Error('Unable to load product image.')
       }
 
-      const imageBlob =
-        await imageResponse.blob()
+      const imageBlob = await imageResponse.blob()
 
       const imageFile = new File(
         [imageBlob],
         'produce-image.jpg',
         {
-          type:
-            imageBlob.type ||
-            'image/jpeg'
+          type: imageBlob.type || 'image/jpeg'
         }
       )
 
@@ -759,7 +756,7 @@ image_path: imagePath
       setProductAnalysisLoading(false)
     }
   }
-
+  
   // =========================================================
   // CLOSE PRODUCT ANALYSIS
   // =========================================================
