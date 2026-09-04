@@ -219,15 +219,14 @@ def create_listing(req: ListingRequest, db: Session = Depends(database.get_db)):
         latitude=req.latitude,
         longitude=req.longitude,
         contact=req.contact or "Contact Farmer",
-        image_path=req.image_path,
+        image_path=req.image_path,  # Stores base64 image data or URL
         created_at=created_time,
         expires_at=expiry_time,
     )
     db.add(new_listing)
     db.commit()
     db.refresh(new_listing)
-    return {"status": "success", "id": new_listing.id}
-
+    return {"status": "success", "listing": new_listing}
 
     # 1. Make sure CORSMiddleware is configured near the top of backend/main.py
 app.add_middleware(
@@ -267,7 +266,7 @@ def delete_listing(
     return {"status": "success", "message": f"Listing {listing_id} deleted successfully."}
 
 
-    
+
 # PRODUCT IMAGE UPLOAD@app.post("/api/upload-image")
 async def upload_product_image(file: UploadFile = File(...)):
     allowed_types = {"image/jpeg", "image/png", "image/webp"}

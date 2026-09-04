@@ -627,8 +627,7 @@ const getCurrentLocation = () => {
       // =====================================================
       // STEP 2: CREATE LISTING
       // =====================================================
-
-     // Prepare payload with safe fallbacks for empty or invalid numbers
+// Prepare payload with safe fallbacks for empty or invalid numbers
       const payload = {
         farmer_name: farmerName || 'Anonymous Farmer',
         crop_name: listCrop,
@@ -641,12 +640,15 @@ const getCurrentLocation = () => {
         image_path: imagePath || null
       };
 
-      // Strip any trailing slash from API_BASE_URL to avoid 405 redirects
+      // Strip any trailing slash from API_BASE_URL
       const cleanBaseUrl = API_BASE_URL.replace(/\/$/, '');
-      const res = await fetch(`${cleanBaseUrl}/api/listings`, {
+      
+      // Target /api/listings/ with trailing slash to prevent HTTP 307/308 redirect method conversion
+      const res = await fetch(`${cleanBaseUrl}/api/listings/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify(payload)
       });
@@ -660,14 +662,19 @@ const getCurrentLocation = () => {
       }
 
       if (!res.ok) {
-        throw new Error(
-          data.detail || `Failed to create listing (Status ${res.status}).`
-        );
+        let errorMsg = 'Failed to create listing.';
+        if (typeof data.detail === 'string') {
+          errorMsg = data.detail;
+        } else if (Array.isArray(data.detail)) {
+          errorMsg = data.detail.map(err => `${err.loc?.[err.loc.length - 1] || 'field'}: ${err.msg}`).join(', ');
+        }
+        throw new Error(`${errorMsg} (Status ${res.status})`);
       }
 
       alert('🎉 Produce listing posted successfully!');
       fetchListings();
 
+      
       // =====================================================
       // RESET FORM
       // =====================================================
