@@ -2,7 +2,7 @@ import os
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-
+from typing import Optional
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -189,19 +189,35 @@ def get_listings(db: Session = Depends(database.get_db)):
     return listings
 
 # CREATE MARKETPLACE LISTING
+# 1. Pydantic model with Optional fields to prevent validation crashes
+class ListingRequest(BaseModel):
+    farmer_name: Optional[str] = "Anonymous Farmer"
+    crop_name: str
+    quantity_kg: float
+    price_per_kg: float
+    location: Optional[str] = "Tamil Nadu"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    contact: Optional[str] = "Contact Farmer"
+    image_path: Optional[str] = None
+
+
+# 2. Dual-path route decorator fixes 405 redirects completely
 @app.post("/api/listings")
+@app.post("/api/listings/")
 def create_listing(req: ListingRequest, db: Session = Depends(database.get_db)):
-    created_time = datetime.now(timezone.utc)
+    created_time = datetime.now(timezone.utc).replace(tzinfo=None)
     expiry_time = created_time + timedelta(days=3)
+
     new_listing = models.DBListing(
-        farmer_name=req.farmer_name,
+        farmer_name=req.farmer_name or "Anonymous Farmer",
         crop_name=req.crop_name,
         quantity_kg=req.quantity_kg,
         price_per_kg=req.price_per_kg,
-        location=req.location,
+        location=req.location or "Tamil Nadu",
         latitude=req.latitude,
         longitude=req.longitude,
-        contact=req.contact,
+        contact=req.contact or "Contact Farmer",
         image_path=req.image_path,
         created_at=created_time,
         expires_at=expiry_time,
@@ -209,7 +225,8 @@ def create_listing(req: ListingRequest, db: Session = Depends(database.get_db)):
     db.add(new_listing)
     db.commit()
     db.refresh(new_listing)
-    return {"status": "success", "listing": new_listing}
+    return {"status": "success", "id": new_listing.id}
+
 
 # PRODUCT IMAGE UPLOAD@app.post("/api/upload-image")
 async def upload_product_image(file: UploadFile = File(...)):

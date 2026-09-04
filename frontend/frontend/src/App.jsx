@@ -580,47 +580,46 @@ const getCurrentLocation = () => {
       // STEP 2: CREATE LISTING
       // =====================================================
 
-      const res = await fetch(
-        `${API_BASE_URL}/api/listings`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            farmer_name: farmerName,
-            crop_name: listCrop,
-            quantity_kg: parseFloat(listQty),
-            price_per_kg: parseFloat(listPrice),
-           location:
-  listLoc || 'Tamil Nadu',
+     // Prepare payload with safe fallbacks for empty or invalid numbers
+      const payload = {
+        farmer_name: farmerName || 'Anonymous Farmer',
+        crop_name: listCrop,
+        quantity_kg: parseFloat(listQty) || 0,
+        price_per_kg: parseFloat(listPrice) || 0,
+        location: listLoc || 'Tamil Nadu',
+        latitude: latitude || null,
+        longitude: longitude || null,
+        contact: listContact || 'Contact Farmer',
+        image_path: imagePath || null
+      };
 
-latitude: latitude,
-longitude: longitude,
+      // Strip any trailing slash from API_BASE_URL to avoid 405 redirects
+      const cleanBaseUrl = API_BASE_URL.replace(/\/$/, '');
+      const res = await fetch(`${cleanBaseUrl}/api/listings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
 
-contact:
-  listContact || 'Contact Farmer',
-
-image_path: imagePath
-          })
-        }
-      )
-
-      const data = await res.json()
+      // Safely parse JSON response
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (e) {
+        data = { detail: res.statusText || 'Server returned a non-JSON response.' };
+      }
 
       if (!res.ok) {
         throw new Error(
-          data.detail ||
-          'Failed to create listing.'
-        )
+          data.detail || `Failed to create listing (Status ${res.status}).`
+        );
       }
 
-      alert(
-        '🎉 Produce listing posted successfully!'
-      )
-
-      fetchListings()
-
+      alert('🎉 Produce listing posted successfully!');
+      fetchListings();
+      
       // =====================================================
       // RESET FORM
       // =====================================================
