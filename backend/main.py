@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, Header
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,7 +12,8 @@ from google import genai
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-
+from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi.middleware.cors import CORSMiddleware
 import database
 import models
 import io
@@ -228,6 +229,45 @@ def create_listing(req: ListingRequest, db: Session = Depends(database.get_db)):
     return {"status": "success", "id": new_listing.id}
 
 
+    # 1. Make sure CORSMiddleware is configured near the top of backend/main.py
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows DELETE requests
+    allow_headers=["*"],  # Allows custom headers like x-admin-key
+)
+
+# 2. Updated Delete Endpoint
+@app.delete("/api/listings/{listing_id}")
+@app.delete("/api/listings/{listing_id}/")
+def delete_listing(
+    listing_id: int, 
+    x_admin_key: str = Header(None), 
+    db: Session = Depends(database.get_db)
+):
+    # Verify Admin Password
+    if str(x_admin_key).strip() != "417545":
+        raise HTTPException(
+            status_code=403, 
+            detail="Unauthorized: Invalid Admin Password."
+        )
+
+    # Locate listing in database
+    listing = db.query(models.DBListing).filter(models.DBListing.id == listing_id).first()
+    if not listing:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Listing ID {listing_id} not found."
+        )
+    
+    # Delete listing and commit
+    db.delete(listing)
+    db.commit()
+    return {"status": "success", "message": f"Listing {listing_id} deleted successfully."}
+
+
+    
 # PRODUCT IMAGE UPLOAD@app.post("/api/upload-image")
 async def upload_product_image(file: UploadFile = File(...)):
     allowed_types = {"image/jpeg", "image/png", "image/webp"}

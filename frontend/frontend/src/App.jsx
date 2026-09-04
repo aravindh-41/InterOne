@@ -13,12 +13,17 @@ function App() {
   )
 
   const [activeMenuId, setActiveMenuId] = useState(null)
-  // ⬇️ PASTE THE FUNCTION HERE
+ 
   const handleDeleteListing = async (listingId) => {
-    setActiveMenuId(null); // Close the 3-dots dropdown
+    setActiveMenuId(null);
+
+    if (!listingId) {
+      alert("❌ Error: Invalid Listing ID.");
+      return;
+    }
 
     const password = window.prompt("🔐 Enter Admin Password to delete this listing:");
-    if (!password) return; // User cancelled prompt
+    if (!password) return;
 
     if (password !== "417545") {
       alert("❌ Incorrect Password!");
@@ -30,23 +35,30 @@ function App() {
       const res = await fetch(`${cleanBaseUrl}/api/listings/${listingId}`, {
         method: 'DELETE',
         headers: {
+          'Content-Type': 'application/json',
           'x-admin-key': password
         }
       });
 
-      const data = await res.json();
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (e) {
+        data = { detail: res.statusText || 'Server error occurred.' };
+      }
 
       if (!res.ok) {
-        throw new Error(data.detail || 'Failed to delete listing.');
+        throw new Error(data.detail || `Failed to delete listing (Status ${res.status}).`);
       }
 
       alert('✅ Listing deleted successfully!');
-      fetchListings(); // Refresh marketplace listings
+      fetchListings();
     } catch (err) {
       alert(`❌ ${err.message}`);
     }
   };
 
+  
   // ... rest of your App.jsx functions, useEffect, and return statement
   
   // =========================================================
@@ -2234,7 +2246,7 @@ const handleAnalyzeProduct = async () => {
         borderTop: '1px solid #f3f4f6'
       }}
     >
-      
+
   {/* BUYER ACTION MESSAGE */}
 
   <div
