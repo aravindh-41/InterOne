@@ -12,7 +12,43 @@ function App() {
     'Connecting to Python API...'
   )
 
+  const [activeMenuId, setActiveMenuId] = useState(null)
+  // ⬇️ PASTE THE FUNCTION HERE
+  const handleDeleteListing = async (listingId) => {
+    setActiveMenuId(null); // Close the 3-dots dropdown
 
+    const password = window.prompt("🔐 Enter Admin Password to delete this listing:");
+    if (!password) return; // User cancelled prompt
+
+    if (password !== "417545") {
+      alert("❌ Incorrect Password!");
+      return;
+    }
+
+    try {
+      const cleanBaseUrl = API_BASE_URL.replace(/\/$/, '');
+      const res = await fetch(`${cleanBaseUrl}/api/listings/${listingId}`, {
+        method: 'DELETE',
+        headers: {
+          'x-admin-key': password
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.detail || 'Failed to delete listing.');
+      }
+
+      alert('✅ Listing deleted successfully!');
+      fetchListings(); // Refresh marketplace listings
+    } catch (err) {
+      alert(`❌ ${err.message}`);
+    }
+  };
+
+  // ... rest of your App.jsx functions, useEffect, and return statement
+  
   // =========================================================
   // DRAGGABLE POPUP STATE & HANDLERS
   // =========================================================
@@ -619,7 +655,7 @@ const getCurrentLocation = () => {
 
       alert('🎉 Produce listing posted successfully!');
       fetchListings();
-      
+
       // =====================================================
       // RESET FORM
       // =====================================================
@@ -2015,153 +2051,190 @@ const handleAnalyzeProduct = async () => {
             >
 
               {listings.map((item) => (
-
-                <div
-                  key={item.id}
-                  style={{
-                    border:
-                      '1px solid #e5e7eb',
-                    borderRadius: '14px',
-                    padding: '1rem',
-                    background:
-                      '#ffffff',
-                    boxShadow:
-                      '0 3px 10px rgba(0,0,0,0.05)',
-                    overflow: 'hidden'
-                  }}
-                >
-
-                  {/* PRODUCT IMAGE */}
-
-                  {item.image_path ? (
-  <img
-    src={
-      item.image_path.startsWith('data:') || item.image_path.startsWith('http')
-        ? item.image_path
-        : `${API_BASE_URL}${item.image_path}`
-    }
-    alt={`${item.crop_name} produce`}
-    onClick={() => handleProductImageClick(item)}
-    title="Click to visually analyse this product"
+  <div
+    key={item.id}
     style={{
-      width: '100%',
-      height: '190px',
-      objectFit: 'cover',
-      borderRadius: '10px',
-      marginBottom: '0.9rem',
-      display: 'block',
-      cursor: 'pointer'
+      position: 'relative', // ⚠️ Added for 3-dots button positioning
+      border: '1px solid #e5e7eb',
+      borderRadius: '14px',
+      padding: '1rem',
+      background: '#ffffff',
+      boxShadow: '0 3px 10px rgba(0,0,0,0.05)',
+      overflow: 'visible' // Allows dropdown menu to overlap cleanly
     }}
-  />
-) : (
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '150px',
-                        borderRadius: '10px',
-                        background:
-                          'linear-gradient(135deg,#f0fdf4,#dcfce7)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '3rem',
-                        marginBottom: '0.9rem'
-                      }}
-                    >
-                      🌱
-                    </div>
-                  )}
+  >
+    {/* 🔘 3-DOTS MENU BUTTON & DROPDOWN */}
+    <div style={{ position: 'absolute', top: '10px', right: '10px', zIndex: 10 }}>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveMenuId(activeMenuId === item.id ? null : item.id);
+        }}
+        style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          border: '1px solid #ddd',
+          borderRadius: '50%',
+          width: '32px',
+          height: '32px',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+          color: '#333'
+        }}
+        title="Options"
+      >
+        ⋮
+      </button>
 
-                  {/* CROP + PRICE */}
+      {/* DROPDOWN MENU */}
+      {activeMenuId === item.id && (
+        <div
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: '36px',
+            backgroundColor: '#ffffff',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            borderRadius: '8px',
+            padding: '4px',
+            zIndex: 20,
+            minWidth: '100px'
+          }}
+        >
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDeleteListing(item.id);
+            }}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              backgroundColor: '#fff0f0',
+              color: '#dc3545',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '0.85rem',
+              textAlign: 'left'
+            }}
+          >
+            🗑️ Delete
+          </button>
+        </div>
+      )}
+    </div>
 
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent:
-                        'space-between',
-                      alignItems:
-                        'center',
-                      gap: '0.5rem'
-                    }}
-                  >
+    {/* PRODUCT IMAGE */}
+    {item.image_path ? (
+      <img
+        src={
+          item.image_path.startsWith('data:') || item.image_path.startsWith('http')
+            ? item.image_path
+            : `${API_BASE_URL}${item.image_path}`
+        }
+        alt={`${item.crop_name} produce`}
+        onClick={() => handleProductImageClick(item)}
+        title="Click to visually analyse this product"
+        style={{
+          width: '100%',
+          height: '190px',
+          objectFit: 'cover',
+          borderRadius: '10px',
+          marginBottom: '0.9rem',
+          display: 'block',
+          cursor: 'pointer'
+        }}
+      />
+    ) : (
+      <div
+        style={{
+          width: '100%',
+          height: '150px',
+          borderRadius: '10px',
+          background: 'linear-gradient(135deg,#f0fdf4,#dcfce7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '3rem',
+          marginBottom: '0.9rem'
+        }}
+      >
+        🌱
+      </div>
+    )}
 
-                    <h4
-                      style={{
-                        margin: 0,
-                        color:
-                          '#15803d'
-                      }}
-                    >
-                      {item.crop_name}
-                    </h4>
+    {/* CROP + PRICE */}
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: '0.5rem'
+      }}
+    >
+      <h4
+        style={{
+          margin: 0,
+          color: '#15803d'
+        }}
+      >
+        {item.crop_name}
+      </h4>
 
-                    <span
-                      style={{
-                        background:
-                          '#dcfce7',
-                        color:
-                          '#15803d',
-                        padding:
-                          '0.3rem 0.6rem',
-                        borderRadius:
-                          '12px',
-                        fontSize:
-                          '0.85rem',
-                        fontWeight:
-                          'bold'
-                      }}
-                    >
-                      ₹
-                      {item.price_per_kg}
-                      /kg
-                    </span>
+      <span
+        style={{
+          background: '#dcfce7',
+          color: '#15803d',
+          padding: '0.3rem 0.6rem',
+          borderRadius: '12px',
+          fontSize: '0.85rem',
+          fontWeight: 'bold'
+        }}
+      >
+        ₹{item.price_per_kg}/kg
+      </span>
+    </div>
 
-                  </div>
+    <p
+      style={{
+        fontSize: '0.9rem',
+        color: '#374151'
+      }}
+    >
+      👨‍🌾 <strong>{item.farmer_name}</strong>
+    </p>
 
-                  <p
-                    style={{
-                      fontSize:
-                        '0.9rem',
-                      color:
-                        '#374151'
-                    }}
-                  >
-                    👨‍🌾{' '}
-                    <strong>
-                      {item.farmer_name}
-                    </strong>
-                  </p>
+    <p
+      style={{
+        fontSize: '0.85rem',
+        color: '#6b7280'
+      }}
+    >
+      ⚖️ {item.quantity_kg} kg
+    </p>
 
-                  <p
-                    style={{
-                      fontSize:
-                        '0.85rem',
-                      color:
-                        '#6b7280'
-                    }}
-                  >
-                    ⚖️ {item.quantity_kg} kg
-                  </p>
+    <p
+      style={{
+        fontSize: '0.85rem',
+        color: '#6b7280'
+      }}
+    >
+      📍 {item.location}
+    </p>
 
-                  <p
-                    style={{
-                      fontSize:
-                        '0.85rem',
-                      color:
-                        '#6b7280'
-                    }}
-                  >
-                    📍 {item.location}
-                  </p>
-
-                 <div
-  style={{
-    marginTop: '1rem',
-    paddingTop: '0.8rem',
-    borderTop: '1px solid #f3f4f6'
-  }}
->
-
+    <div
+      style={{
+        marginTop: '1rem',
+        paddingTop: '0.8rem',
+        borderTop: '1px solid #f3f4f6'
+      }}
+    >
+      
   {/* BUYER ACTION MESSAGE */}
 
   <div
