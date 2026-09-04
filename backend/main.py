@@ -101,8 +101,6 @@ def generate_ai_content(prompt: str, image_data: bytes = None, mime_type: str = 
     models_to_try = [
         "gemini-3.6-flash",
         "gemini-3.5-flash-lite",
-        "gemini-2.5-flash",
-        "gemini-1.5-flash"
     ]
     
     last_error = None
