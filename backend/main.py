@@ -1,10 +1,12 @@
 import os
 import time
+import io
+import base64
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import FastAPI, Depends, HTTPException, Header, Request, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,13 +14,10 @@ from google import genai
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from fastapi import FastAPI, Depends, HTTPException, Header
-from fastapi.middleware.cors import CORSMiddleware
+from PIL import Image
+
 import database
 import models
-import io
-import base64
-from PIL import Image
 
 # ENVIRONMENT SETUP
 load_dotenv()
@@ -65,10 +64,9 @@ def patch_database_schema():
 patch_database_schema()
 
 # FASTAPI APP SETUP
-# redirect_slashes=False prevents automatic redirects that convert POST/DELETE to GET
 app = FastAPI(title="InterOne API", redirect_slashes=False)
 
-# CORS Middleware must sit immediately below app initialization
+# SINGLE CORS MIDDLEWARE DEFINITION (Must sit immediately below app initialization)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -77,7 +75,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# CATCH-ALL EXCEPTION HANDLER (Prevents raw HTML Internal Server Errors)
+# CATCH-ALL EXCEPTION HANDLER
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     print(f"Server Error on {request.url.path}: {exc}")
@@ -89,15 +87,6 @@ async def global_exception_handler(request: Request, exc: Exception):
 # SERVE UPLOADED IMAGES
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
-# CORS CONFIGURATION
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # GEMINI AI CLIENT
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
@@ -105,7 +94,6 @@ if not GEMINI_API_KEY:
 
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
-# HELPER FUNCTION FOR GEMINI RETRIES & FALLBACK
 def generate_ai_content(prompt: str, image_data: bytes = None, mime_type: str = None):
     if not client:
         return "AI Service Unavailable: GEMINI_API_KEY environment variable is missing on Render."
@@ -120,7 +108,7 @@ def generate_ai_content(prompt: str, image_data: bytes = None, mime_type: str = 
     last_error = None
     
     for model_name in models_to_try:
-        for attempt in range(2):  # Try each model twice with a short delay
+        for attempt in range(2):
             try:
                 contents = [prompt]
                 if image_data and mime_type:
@@ -158,24 +146,24 @@ class MandiQueryRequest(BaseModel):
     location: str
 
 class ListingRequest(BaseModel):
-    farmer_name: str
+    farmer_name: Optional[str] = "Anonymous Farmer"
     crop_name: str
     quantity_kg: float
     price_per_kg: float
-    location: str
-    latitude: float | None = None
-    longitude: float | None = None
-    contact: str
-    image_path: str | None = None
+    location: Optional[str] = "Tamil Nadu"
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    contact: Optional[str] = "Contact Farmer"
+    image_path: Optional[str] = None
 
 # HEALTH CHECK ENDPOINT
 @app.get("/api/health")
+@app.get("/api/health/")
 def health_check():
     return {"status": "Running", "message": "InterOne API is live"}
 
 # HELPER: DATABASE EXPIRATION CLEANUP
 def cleanup_expired_listings(db: Session):
-    """Safely removes expired listings prior to query execution."""
     now = datetime.now(timezone.utc)
     try:
         db.query(models.DBListing).filter(
@@ -186,8 +174,9 @@ def cleanup_expired_listings(db: Session):
         db.rollback()
         print(f"Cleanup non-fatal error: {e}")
 
-# DATABASE MARKETPLACE ENDPOINTS
+# GET MARKETPLACE LISTINGS
 @app.get("/api/listings")
+@app.get("/api/listings/")
 def get_listings(db: Session = Depends(database.get_db)):
     cleanup_expired_listings(db)
     now = datetime.now(timezone.utc)
@@ -200,20 +189,6 @@ def get_listings(db: Session = Depends(database.get_db)):
     return listings
 
 # CREATE MARKETPLACE LISTING
-# 1. Pydantic model with Optional fields to prevent validation crashes
-class ListingRequest(BaseModel):
-    farmer_name: Optional[str] = "Anonymous Farmer"
-    crop_name: str
-    quantity_kg: float
-    price_per_kg: float
-    location: Optional[str] = "Tamil Nadu"
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    contact: Optional[str] = "Contact Farmer"
-    image_path: Optional[str] = None
-
-
-# 2. Dual-path route decorator fixes 405 redirects completely
 @app.post("/api/listings")
 @app.post("/api/listings/")
 def create_listing(req: ListingRequest, db: Session = Depends(database.get_db)):
@@ -229,7 +204,7 @@ def create_listing(req: ListingRequest, db: Session = Depends(database.get_db)):
         latitude=req.latitude,
         longitude=req.longitude,
         contact=req.contact or "Contact Farmer",
-        image_path=req.image_path,  # Stores base64 image data or URL
+        image_path=req.image_path,
         created_at=created_time,
         expires_at=expiry_time,
     )
@@ -238,16 +213,7 @@ def create_listing(req: ListingRequest, db: Session = Depends(database.get_db)):
     db.refresh(new_listing)
     return {"status": "success", "listing": new_listing}
 
-    # 1. Make sure CORSMiddleware is configured near the top of backend/main.py
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],  # Allows DELETE requests
-    allow_headers=["*"],  # Allows custom headers like x-admin-key
-)
-
-# 2. Updated Delete Endpoint
+# DELETE MARKETPLACE LISTING
 @app.delete("/api/listings/{listing_id}")
 @app.delete("/api/listings/{listing_id}/")
 def delete_listing(
@@ -255,14 +221,12 @@ def delete_listing(
     x_admin_key: str = Header(None), 
     db: Session = Depends(database.get_db)
 ):
-    # Verify Admin Password
     if str(x_admin_key).strip() != "417545":
         raise HTTPException(
             status_code=403, 
             detail="Unauthorized: Invalid Admin Password."
         )
 
-    # Locate listing in database
     listing = db.query(models.DBListing).filter(models.DBListing.id == listing_id).first()
     if not listing:
         raise HTTPException(
@@ -270,14 +234,13 @@ def delete_listing(
             detail=f"Listing ID {listing_id} not found."
         )
     
-    # Delete listing and commit
     db.delete(listing)
     db.commit()
     return {"status": "success", "message": f"Listing {listing_id} deleted successfully."}
 
-
-
-# PRODUCT IMAGE UPLOAD@app.post("/api/upload-image")
+# PRODUCT IMAGE UPLOAD (Fixed decorator syntax)
+@app.post("/api/upload-image")
+@app.post("/api/upload-image/")
 async def upload_product_image(file: UploadFile = File(...)):
     allowed_types = {"image/jpeg", "image/png", "image/webp"}
     if file.content_type not in allowed_types:
@@ -288,19 +251,16 @@ async def upload_product_image(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Image must be under 5MB.")
 
     try:
-        # Resize and compress image using Pillow
         img = Image.open(io.BytesIO(contents))
-        img.thumbnail((800, 800))  # Resize max dimensions to 800px
+        img.thumbnail((800, 800))
         
-        # Convert transparent images to RGB
         if img.mode in ("RGBA", "P"):
             img = img.convert("RGB")
 
         buffer = io.BytesIO()
-        img.save(buffer, format="JPEG", quality=70)  # Compress quality to 70%
+        img.save(buffer, format="JPEG", quality=70)
         compressed_bytes = buffer.getvalue()
 
-        # Convert compressed image to Base64
         base64_data = base64.b64encode(compressed_bytes).decode("utf-8")
         data_url = f"data:image/jpeg;base64,{base64_data}"
 
@@ -312,9 +272,10 @@ async def upload_product_image(file: UploadFile = File(...)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image processing failed: {str(e)}")
-        
+
 # AI PRODUCE QUALITY ANALYZER
 @app.post("/api/ai/analyze-produce")
+@app.post("/api/ai/analyze-produce/")
 async def analyze_produce(crop_name: str = Form(...), file: UploadFile = File(...)):
     allowed_types = {"image/jpeg", "image/png", "image/webp"}
     if file.content_type not in allowed_types:
@@ -323,8 +284,7 @@ async def analyze_produce(crop_name: str = Form(...), file: UploadFile = File(..
             detail="Only JPG, PNG, and WEBP images are allowed.",
         )
     image_data = await file.read()
-    MAX_SIZE = 2 * 1024 * 1024
-    if len(image_data) > MAX_SIZE:
+    if len(image_data) > 2 * 1024 * 1024:
         raise HTTPException(
             status_code=400,
             detail="Image must be 2 MB or smaller.",
@@ -375,6 +335,7 @@ Keep the answer concise and farmer-friendly."""
 
 # AI CHAT
 @app.post("/api/ai/chat")
+@app.post("/api/ai/chat/")
 def ai_chat(req: ChatRequest):
     try:
         system_prompt = (
@@ -389,6 +350,7 @@ def ai_chat(req: ChatRequest):
 
 # ZERO-WASTE AI
 @app.post("/api/ai/zero-waste")
+@app.post("/api/ai/zero-waste/")
 def zero_waste_analysis(req: ZerowasteRequest):
     try:
         prompt = (
@@ -407,6 +369,7 @@ def zero_waste_analysis(req: ZerowasteRequest):
 
 # MANDI PRICE INTELLIGENCE
 @app.post("/api/ai/mandi-price")
+@app.post("/api/ai/mandi-price/")
 def get_mandi_price_intelligence(req: MandiQueryRequest):
     try:
         prompt = (
@@ -441,7 +404,7 @@ if os.path.exists(frontend_dist):
 
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
-        if full_path.startswith("api"):
+        if full_path.startswith("api/") or full_path.startswith("uploads/"):
             raise HTTPException(status_code=404, detail="API route not found")
         file_path = os.path.join(frontend_dist, full_path)
         if os.path.exists(file_path) and os.path.isfile(file_path):
