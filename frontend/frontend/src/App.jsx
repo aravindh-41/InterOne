@@ -674,46 +674,47 @@ image_path: imagePath
   // ANALYSE SELECTED PRODUCT
   // =========================================================
 
-  const handleAnalyzeProduct = async () => {
+const handleAnalyzeProduct = async () => {
     if (!selectedProduct?.image_path) return
 
     try {
       setProductAnalysisLoading(true)
       setProductAnalysis('')
 
-      // Handle both Base64 data URIs and standard local URL paths
-      const imageUrl =
-        selectedProduct.image_path.startsWith('data:') || selectedProduct.image_path.startsWith('http')
+      let imageFile
+
+      // 1. If Base64 string, convert directly in JS without fetch()
+      if (selectedProduct.image_path.startsWith('data:')) {
+        const arr = selectedProduct.image_path.split(',')
+        const mime = arr[0].match(/:(.*?);/)[1] || 'image/jpeg'
+        const bstr = atob(arr[1])
+        let n = bstr.length
+        const u8arr = new Uint8Array(n)
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n)
+        }
+        const imageBlob = new Blob([u8arr], { type: mime })
+        imageFile = new File([imageBlob], 'produce-image.jpg', { type: mime })
+      } else {
+        // 2. Fallback fetch for standard HTTP image paths
+        const imageUrl = selectedProduct.image_path.startsWith('http')
           ? selectedProduct.image_path
           : `${API_BASE_URL}${selectedProduct.image_path}`
 
-      const imageResponse = await fetch(imageUrl)
-
-      if (!imageResponse.ok) {
-        throw new Error('Unable to load product image.')
+        const imageResponse = await fetch(imageUrl)
+        if (!imageResponse.ok) {
+          throw new Error('Unable to load product image.')
+        }
+        const imageBlob = await imageResponse.blob()
+        imageFile = new File([imageBlob], 'produce-image.jpg', {
+          type: imageBlob.type || 'image/jpeg'
+        })
       }
 
-      const imageBlob = await imageResponse.blob()
-
-      const imageFile = new File(
-        [imageBlob],
-        'produce-image.jpg',
-        {
-          type: imageBlob.type || 'image/jpeg'
-        }
-      )
-
+      // 3. Send image to AI Analysis endpoint
       const formData = new FormData()
-
-      formData.append(
-        'crop_name',
-        selectedProduct.crop_name
-      )
-
-      formData.append(
-        'file',
-        imageFile
-      )
+      formData.append('crop_name', selectedProduct.crop_name)
+      formData.append('file', imageFile)
 
       const response = await fetch(
         `${API_BASE_URL}/api/ai/analyze-produce`,
@@ -756,7 +757,7 @@ image_path: imagePath
       setProductAnalysisLoading(false)
     }
   }
-  
+    
   // =========================================================
   // CLOSE PRODUCT ANALYSIS
   // =========================================================

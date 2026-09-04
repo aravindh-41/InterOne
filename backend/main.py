@@ -31,7 +31,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 models.Base.metadata.create_all(bind=database.engine)
 
 def patch_database_schema():
-    """Automatically patches missing columns and expands image_path to LONGTEXT for persistent Base64 images."""
+    """Automatically patches missing columns and cleans up broken legacy listings."""
     with database.engine.connect() as conn:
         columns_to_add = [
             ("latitude", "FLOAT NULL"),
@@ -44,17 +44,22 @@ def patch_database_schema():
             try:
                 conn.execute(text(f"ALTER TABLE listings ADD COLUMN {col_name} {col_type};"))
                 conn.commit()
-                print(f"Database migration: Added '{col_name}' column successfully.")
             except Exception:
-                pass  # Column already exists
+                pass
 
-        # Upgrade existing VARCHAR(255) column to LONGTEXT if it already existed
         try:
             conn.execute(text("ALTER TABLE listings MODIFY COLUMN image_path LONGTEXT NULL;"))
             conn.commit()
-            print("Database migration: Updated 'image_path' to LONGTEXT.")
+        except Exception:
+            pass
+
+        # Auto-delete legacy listings that don't use Base64 image formatting
+        try:
+            conn.execute(text("DELETE FROM listings WHERE image_path NOT LIKE 'data:%' AND image_path IS NOT NULL;"))
+            conn.commit()
+            print("Database cleanup: Removed legacy listings with broken image paths.")
         except Exception as e:
-            print(f"Column modify note: {e}")
+            print(f"Database cleanup note: {e}")
 
 patch_database_schema()
 
