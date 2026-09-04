@@ -64,8 +64,18 @@ def patch_database_schema():
 
 patch_database_schema()
 
-# FASTAPI APP
-app = FastAPI(title="InterOne API")
+# FASTAPI APP SETUP
+# redirect_slashes=False prevents automatic redirects that convert POST/DELETE to GET
+app = FastAPI(title="InterOne API", redirect_slashes=False)
+
+# CORS Middleware must sit immediately below app initialization
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # CATCH-ALL EXCEPTION HANDLER (Prevents raw HTML Internal Server Errors)
 @app.exception_handler(Exception)
