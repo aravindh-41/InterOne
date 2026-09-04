@@ -58,7 +58,7 @@ function App() {
     }
   };
 
-  
+
   // ... rest of your App.jsx functions, useEffect, and return statement
   
   // =========================================================
@@ -548,11 +548,11 @@ const getCurrentLocation = () => {
       return
     }
 
-    const MAX_SIZE = 200 * 1024
+    const MAX_SIZE = 500 * 1024
 
     if (file.size > MAX_SIZE) {
       alert(
-        '❌ Image must be 200 KB or smaller.'
+        '❌ Image must be 500 KB or smaller.'
       )
 
       e.target.value = ''
