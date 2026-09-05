@@ -9,7 +9,7 @@ function App() {
   const [input, setInput] = useState('')
   const [activeTab, setActiveTab] = useState('chat')
   const [backendStatus, setBackendStatus] = useState(
-    'Connecting to Python API...'
+    'Connecting...'
   )
 
   const [activeMenuId, setActiveMenuId] = useState(null)
@@ -511,7 +511,7 @@ const getCurrentLocation = () => {
       setMandiReport(data.report)
     } catch (err) {
       setMandiReport(
-        'Failed to fetch Mandi price intelligence.'
+        'Failed to fetch Market price intelligence.'
       )
     } finally {
       setMandiLoading(false)
@@ -898,7 +898,7 @@ const handleAnalyzeProduct = async () => {
       display: 'inline-block'
     }}
   ></span>
-  Backend: {backendStatus}
+  Status: {backendStatus}
 </span>
       </header>
 
@@ -949,11 +949,11 @@ const handleAnalyzeProduct = async () => {
     ♻️ Zero-Waste
   </button>
 
-  {/* 3. MANDI INTELLIGENCE */}
+  {/* 3. MARKET PRICE INTELLIGENCE */}
   <button
     onClick={() => setActiveTab('mandi')}
     style={{
-      background: activeTab === 'mandi' ? '#22c55e' : '#f3f4f6',
+      background: activeTab === 'market' ? '#22c55e' : '#f3f4f6',
       color: activeTab === 'mandi' ? '#ffffff' : '#374151',
       border: 'none',
       padding: '0.7rem 1.1rem',
@@ -963,7 +963,7 @@ const handleAnalyzeProduct = async () => {
       whiteSpace: 'nowrap'
     }}
   >
-    📊 Mandi Price Intelligence
+    📊 Market Price Intelligence
   </button>
 
   {/* 4. AI ADVISORY (Swapped to fourth position) */}
