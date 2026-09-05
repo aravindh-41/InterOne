@@ -950,21 +950,23 @@ const handleAnalyzeProduct = async () => {
   </button>
 
   {/* 3. MARKET PRICE INTELLIGENCE */}
-  <button
-    onClick={() => setActiveTab('mandi')}
-    style={{
-      background: activeTab === 'market' ? '#22c55e' : '#f3f4f6',
-      color: activeTab === 'mandi' ? '#ffffff' : '#374151',
-      border: 'none',
-      padding: '0.7rem 1.1rem',
-      borderRadius: '10px',
-      fontWeight: 'bold',
-      cursor: 'pointer',
-      whiteSpace: 'nowrap'
-    }}
-  >
-    📊 Market Price Intelligence
-  </button>
+<button
+  onClick={() => setActiveTab('mandi')}
+  style={{
+    background: activeTab === 'mandi' ? '#22c55e' : '#f3f4f6',
+    color: activeTab === 'mandi' ? '#ffffff' : '#374151',
+    border: 'none',
+    padding: '0.7rem 1.1rem',
+    borderRadius: '10px',
+    fontWeight: '700',
+    fontSize: '0.95rem',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    transition: 'all 0.2s ease'
+  }}
+>
+  📊 Market Price Intelligence
+</button>
 
   {/* 4. AI ADVISORY (Swapped to fourth position) */}
   <button
